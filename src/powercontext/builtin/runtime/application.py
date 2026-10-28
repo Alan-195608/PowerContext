@@ -828,6 +828,14 @@ class ScopedContextApplication:
         self._runtime = runtime
         self.scope_id = validate_scope_id(scope_id)
 
+    async def prepare_incremental(self, request: PrepareContextRequest, base_pack=None):
+        """Prepare through the normal policy and encode a standalone pack or delta."""
+        from powercontext.builtin.runtime.context_pack import ContextPack, ContextPackDelta
+
+        prepared = await self.prepare(request)
+        target = ContextPack.from_content(prepared.content)
+        return target if base_pack is None else ContextPackDelta.between(base_pack, target)
+
     async def prepare(
         self,
         request: PrepareContextRequest,
@@ -2683,7 +2691,9 @@ class ScopedTopicMemoryApplication:
                         "unit": "topic-memory",
                     },
                 )
-        return result
+        return result.model_copy(
+            update={"hits": await self._runtime.lifecycle.for_scope(self.scope_id).filter_topics(result.hits)}
+        )
 
     async def _search_with_embedding(
         self,
@@ -3109,6 +3119,9 @@ class BuiltinRuntime:
         self.handoff = HandoffApplication(self)
         self.work = WorkApplication(self)
         self.memory = MemoryApplication(self)
+        from powercontext.builtin.runtime.source_lifecycle import LifecycleApplication
+
+        self.lifecycle = LifecycleApplication(self)
         self.topic_memory = TopicMemoryApplication(self)
         self.records = RecordApplication(self)
         self.prompts = PromptApplication(self)

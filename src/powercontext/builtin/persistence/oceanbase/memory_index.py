@@ -232,6 +232,64 @@ class OceanBaseMemoryFTSIndex:
 class OceanBaseMemoryVectorIndex:
     """OceanBase HNSW strategy over rebuildable active-head embeddings."""
 
+    async def search_hybrid(self, connection, scope_id, request):
+        if request.embedding_profile != self.profile or request.query_vector is None:
+            raise CapabilityNotSupportedError("embedding-profile")
+        if not await self.vector_complete(connection, scope_id, request.memories, self.profile):
+            raise CapabilityNotSupportedError("vector")
+        lexical = """
+SELECT 'fts' AS channel, m.memory_artifact_id, m.head_revision,
+       m.entry_id, m.entry_version_id, v.text, NULL AS distance
+FROM pc_memory_entry_heads AS m
+JOIN pc_memory_entry_versions AS v
+  ON v.scope_id=m.scope_id AND v.memory_artifact_id=m.memory_artifact_id
+ AND v.entry_version_id=m.entry_version_id
+WHERE m.scope_id=:scope_id AND m.memory_artifact_id IN :memory_artifact_ids
+  AND MATCH(m.searchable_text) AGAINST (:analyzed_query)
+{tag_filter}
+ORDER BY MATCH(m.searchable_text) AGAINST (:analyzed_query) DESC,
+         m.memory_artifact_id, m.entry_id, m.entry_version_id
+LIMIT :candidate_limit
+""".format(tag_filter="" if request.tag_filter is None else memory_tag_sql("m"))
+        semantic = _OCEANBASE_VECTOR_SEARCH_SQL.replace("SELECT\n", "SELECT 'vector' AS channel,\n", 1)
+        if request.tag_filter is not None:
+            semantic = semantic.replace("ORDER BY", memory_tag_sql("m") + "ORDER BY").replace(" APPROXIMATE", "")
+        statement = text(
+            "SELECT * FROM ("
+            + lexical
+            + ") AS lexical_candidates UNION ALL SELECT * FROM ("  # noqa: S608 - fixed SQL fragments; query values are bound
+            + semantic
+            + ") AS semantic_candidates"
+        ).bindparams(
+            bindparam("memory_artifact_ids", expanding=True),
+            bindparam("query_vector", type_=VECTOR(self.profile.dimension)),
+        )
+        if request.tag_filter is not None:
+            statement = statement.bindparams(
+                bindparam("tag_keys", expanding=True), bindparam("tag_hashes", expanding=True)
+            )
+        rows = (
+            (
+                await connection.execute(
+                    statement,
+                    {
+                        "scope_id": scope_id,
+                        "memory_artifact_ids": tuple(memory.artifact_id for memory in request.memories),
+                        "analyzed_query": request.analyzed_query,
+                        "query_vector": validate_embedding(request.query_vector, dimension=self.profile.dimension),
+                        "candidate_limit": request.candidate_limit,
+                        **memory_tag_parameters(request.tag_filter),
+                    },
+                )
+            )
+            .mappings()
+            .all()
+        )
+        return MemorySearchChannels(
+            fts=memory_channel_hits((row for row in rows if row["channel"] == "fts"), request.memories),
+            vector=memory_channel_hits((row for row in rows if row["channel"] == "vector"), request.memories),
+        )
+
     def __init__(self, profile: EmbeddingProfile) -> None:
         if profile.dimension < 1 or profile.distance != "l2" or profile.normalization != "unit":
             raise CapabilityNotSupportedError(
