@@ -1,0 +1,235 @@
+app:
+  name: 23:57 时间循环便利店（免模型验证版）
+  description: 用记忆逃离午夜：Dify 编排、AI 店员、PowerContext 跨轮记忆。
+  mode: advanced-chat
+  icon: 🏪
+  icon_background: '#E0E7FF'
+  use_icon_as_answer_icon: false
+kind: app
+version: 0.3.0
+dependencies: []
+workflow:
+  conversation_variables: []
+  environment_variables:
+  - id: game-url
+    name: GAME_URL
+    value: http://host.docker.internal:18766
+    value_type: string
+    description: 游戏后端地址（Dify 服务器可访问）
+    selector:
+    - env
+    - GAME_URL
+  features:
+    opening_statement: 23:57，欢迎来到时间循环便利店。请输入“开始”。行动用按钮或原样输入；前三分钟探索，找齐两条线索可获得额外一分钟。通行证是存档凭据，请用随机字符串并妥善保存。
+    suggested_questions:
+    - 开始
+    - 看收据
+    - 听广播
+    - 买牛奶
+    - 拉电闸
+    - 递牛奶
+    - 开门
+    - 状态
+    - 重来
+    suggested_questions_after_answer:
+      enabled: false
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      enabled: false
+    file_upload:
+      enabled: false
+  graph:
+    nodes:
+    - id: start
+      type: custom
+      position:
+        x: 80
+        y: 200
+      width: 270
+      height: 100
+      data:
+        type: start
+        title: 玩家通行证
+        desc: ''
+        selected: false
+        variables:
+        - variable: player
+          label: 玩家通行证（保存后可跨会话继续）
+          type: text-input
+          required: true
+          max_length: 80
+      sourcePosition: right
+      targetPosition: left
+    - id: encode
+      type: custom
+      position:
+        x: 390
+        y: 200
+      width: 270
+      height: 100
+      data:
+        type: code
+        title: 安全编码输入
+        desc: ''
+        selected: false
+        code_language: python3
+        variables:
+        - variable: player
+          value_selector:
+          - start
+          - player
+        - variable: action
+          value_selector:
+          - sys
+          - query
+        - variable: rid
+          value_selector:
+          - sys
+          - workflow_run_id
+        code: "import json\ndef main(player: str, action: str, rid: str) -> dict:\n\
+          \ return {\"body\": json.dumps({\"player\":player,\"action\":action,\"request_id\"\
+          :rid}, ensure_ascii=False)}"
+        outputs:
+          body:
+            type: string
+            children: null
+      sourcePosition: right
+      targetPosition: left
+    - id: http
+      type: custom
+      position:
+        x: 700
+        y: 200
+      width: 270
+      height: 100
+      data:
+        type: http-request
+        title: 执行行动并召回 PowerContext
+        desc: ''
+        selected: false
+        method: post
+        url: '{{#env.GAME_URL#}}/turn'
+        authorization:
+          type: no-auth
+          config: null
+        headers: Content-Type:application/json
+        params: ''
+        variables: []
+        body:
+          type: raw-text
+          data:
+          - id: json-body
+            key: ''
+            type: text
+            value: '{{#encode.body#}}'
+        timeout:
+          connect: 10
+          read: 60
+          write: 20
+        retry_config:
+          retry_enabled: true
+          max_retries: 2
+          retry_interval: 1000
+      sourcePosition: right
+      targetPosition: left
+    - id: parse
+      type: custom
+      position:
+        x: 1010
+        y: 200
+      width: 270
+      height: 100
+      data:
+        type: code
+        title: 提取权威状态
+        desc: ''
+        selected: false
+        code_language: python3
+        variables:
+        - variable: body
+          value_selector:
+          - http
+          - body
+        - variable: status
+          value_selector:
+          - http
+          - status_code
+        code: "import json\ndef main(body: str, status: int) -> dict:\n r=json.loads(body)\n\
+          \ if status != 200: raise ValueError(r.get(\"error\", \"服务不可用\"))\n return\
+          \ {\"display\":r[\"display\"], \"facts\":json.dumps({\"event\":r[\"event\"\
+          ], \"notebook\":r[\"notebook\"], \"state\":r[\"state\"]},ensure_ascii=False)}"
+        outputs:
+          display:
+            type: string
+            children: null
+          facts:
+            type: string
+            children: null
+      sourcePosition: right
+      targetPosition: left
+    - id: answer
+      type: custom
+      position:
+        x: 1320
+        y: 200
+      width: 270
+      height: 100
+      data:
+        type: answer
+        title: 行动结果与跨轮笔记
+        desc: ''
+        selected: false
+        answer: '{{#parse.display#}}'
+        variables: []
+      sourcePosition: right
+      targetPosition: left
+    edges:
+    - id: start-encode
+      type: custom
+      source: start
+      target: encode
+      sourceHandle: source
+      targetHandle: target
+      data:
+        sourceType: start
+        targetType: code
+        isInIteration: false
+    - id: encode-http
+      type: custom
+      source: encode
+      target: http
+      sourceHandle: source
+      targetHandle: target
+      data:
+        sourceType: code
+        targetType: http-request
+        isInIteration: false
+    - id: http-parse
+      type: custom
+      source: http
+      target: parse
+      sourceHandle: source
+      targetHandle: target
+      data:
+        sourceType: http-request
+        targetType: code
+        isInIteration: false
+    - id: parse-answer
+      type: custom
+      source: parse
+      target: answer
+      sourceHandle: source
+      targetHandle: target
+      data:
+        sourceType: code
+        targetType: answer
+        isInIteration: false
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.7
