@@ -96,58 +96,86 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
                         hit.text,
                     ))
     frequency = Counter(token for _, tokens, _ in candidates for token in tokens)
-    scored = []
-    for index, (fragment, tokens, original) in enumerate(candidates):
+
+    def identity(fragment):
+        return (fragment.address.memory.model_dump_json(), fragment.address.entry_id, fragment.address.entry_version_id)
+
+    document_tokens = {}
+    for fragment, tokens, _ in candidates:
+        document_tokens.setdefault(identity(fragment), Counter()).update(tokens)
+    document_scores = {
+        address: sum(math.log(1 + len(candidates) / (1 + frequency[t])) for t in query if t in tokens)
+        for address, tokens in document_tokens.items()
+    }
+    maximum = max(document_scores.values(), default=1) or 1
+    scores = []
+    for fragment, tokens, _ in candidates:
         matches = set(query) & tokens.keys()
-        score = sum(
-            math.log(1 + len(candidates) / (1 + frequency[token])) * (1 + math.log1p(tokens[token]))
-            for token in matches
-        )
+        score = sum(math.log(1 + len(candidates) / (1 + frequency[t])) for t in matches)
         score *= 1 + len(matches) / max(1, len(query))
-        score /= 1 + 0.001 * len(fragment.text)
-        if score > 0:
-            scored.append((score, index, fragment, original))
-    scored.sort(key=lambda value: (-value[0], value[1]))
-    selected = []
-    seen = set()
-    for _, _, fragment, original in scored:
-        key = (
-            fragment.address.memory.model_dump_json(),
-            fragment.address.entry_id,
-            fragment.address.entry_version_id,
-            fragment.start,
-            fragment.end,
-        )
-        if key in seen:
-            continue
-        seen.add(key)
-        # Merge neighboring intervals from one entry to avoid charging a second citation.
-        trial = list(selected)
-        merged = False
-        for index, previous in enumerate(trial):
-            if previous.address == fragment.address and not (
-                fragment.start > previous.end + 2 or previous.start > fragment.end + 2
-            ):
-                start, end = min(previous.start, fragment.start), max(previous.end, fragment.end)
-                trial[index] = replace(previous, start=start, end=end, text=original[start:end])
-                merged = True
+        score *= (document_scores[identity(fragment)] / maximum) ** 0.5
+        score /= max(1, sum(tokens.values())) ** 0.35
+        scores.append(score)
+    # Evaluate contiguous windows: one citation can then pay for several useful
+    # sentences, including connecting evidence with few literal query words.
+    windows = []
+    for left, (first, _, original) in enumerate(candidates):
+        total = 0.0
+        for right in range(left, len(candidates)):
+            last = candidates[right][0]
+            if last.address != first.address:
                 break
-        if not merged:
-            trial.append(fragment)
-        if len(_render(trial).encode()) <= request.max_bytes:
-            selected = trial
-        elif not selected:
-            low, high = 1, len(fragment.text)
-            fitting = None
-            while low <= high:
-                middle = (low + high) // 2
-                shortened = replace(fragment, end=fragment.start + middle, text=fragment.text[:middle])
-                if len(_render([shortened]).encode()) <= request.max_bytes:
-                    fitting, low = shortened, middle + 1
-                else:
-                    high = middle - 1
-            if fitting is not None:
-                selected = [fitting]
+            total += scores[right]
+            fragment = replace(first, end=last.end, text=original[first.start : last.end])
+            size = len(_render([fragment]).encode())
+            if size > request.max_bytes:
+                break
+            if total:
+                windows.append((total / max(1, len(fragment.text)) ** 0.25, left, fragment))
+    windows.sort(key=lambda value: (-value[0], value[1]))
+    selected = []
+    for _, _, fragment in windows:
+        if any(f.address == fragment.address and f.start < fragment.end and fragment.start < f.end for f in selected):
+            continue
+        if len(_render([*selected, fragment]).encode()) <= request.max_bytes:
+            selected.append(fragment)
+    # Spend the remaining bytes on adjacent literal context rather than leaving
+    # room stranded below the cost of another citation.
+    originals = {identity(fragment): original for fragment, _, original in candidates}
+    for index, fragment in enumerate(selected):
+        original = originals[identity(fragment)]
+        neighbors = [
+            other
+            for other, _, _ in candidates
+            if other.address == fragment.address and (other.start >= fragment.end or other.end <= fragment.start)
+        ]
+        neighbors.sort(key=lambda other: min(abs(other.start - fragment.end), abs(fragment.start - other.end)))
+        for other in neighbors:
+            start, end = min(fragment.start, other.start), max(fragment.end, other.end)
+            trial = list(selected)
+            trial[index] = replace(fragment, start=start, end=end, text=original[start:end])
+            if len(_render(trial).encode()) <= request.max_bytes:
+                selected, fragment = trial, trial[index]
+            else:
+                break
+    if not selected and candidates and max(scores, default=0) > 0:
+        best = max(range(len(scores)), key=scores.__getitem__)
+        fragment, _, _ = candidates[best]
+        # A sentence can itself exceed the wire budget. Center a literal window
+        # on a matching word instead of dropping all evidence or clipping its tail.
+        anchor = next(
+            (m.start() for m in re.finditer(r"\w+", fragment.text) if set(_tokens(m.group())) & query.keys()), 0
+        )
+        start = fragment.start + max(0, anchor - 80)
+        low, high = 1, fragment.end - start
+        original = candidates[best][2]
+        while low <= high:
+            length = (low + high) // 2
+            shortened = replace(fragment, start=start, end=start + length, text=original[start : start + length])
+            if len(_render([shortened]).encode()) <= request.max_bytes:
+                selected, low = [shortened], length + 1
+            else:
+                high = length - 1
     if not selected:
         return PreparedContextBuild(PreparedContext(status="empty", content=None, content_bytes=0), ())
     content = _render(selected)
