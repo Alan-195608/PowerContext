@@ -91,3 +91,35 @@ def test_financial_query_returns_multiple_statement_pages_and_legal_synonyms():
         assert records[32].citation in result[:4]
 
     asyncio.run(check())
+
+
+def test_pdf_company_identity_prevents_cross_issuer_statement_matches():
+    ref = ArtifactRef(family="memory", artifact_id="issuer-regression", revision=1)
+    texts = [
+        "BETA_2022_10K\nConsolidated Statement of Income\nOperating income gross margin revenue " * 20
+        for _ in range(30)
+    ] + [
+        "ALPHACORPORATION_2022_10K\nConsolidated Statement of Income\nRevenue 500. Operating income 100.",
+        "ALPHACORPORATION_2022_10K\nConsolidated Statement of Cash Flows\nDepreciation 20. Capital expenditures 30.",
+    ]
+    records = tuple(
+        SimpleNamespace(
+            entry=SimpleNamespace(text=text, sources=(SimpleNamespace(source_type="pdf-page", source_id=str(index)),)),
+            citation=MemoryCitation(memory_ref=ref, entry_id=str(index), entry_version_id=str(index)),
+        )
+        for index, text in enumerate(texts)
+    )
+
+    class Memory:
+        async def search(self, request):
+            return SimpleNamespace(hits=())
+
+        async def list(self):
+            return SimpleNamespace(entries=records)
+
+    async def check():
+        for name in ("Alpha Corporation", "ALCO"):
+            citations = await search_pdf_pages(Memory(), f"What was {name}'s operating margin in 2022?", 2)
+            assert {c.entry_id for c in citations} == {"30", "31"}
+
+    asyncio.run(check())

@@ -176,11 +176,54 @@ _CONCEPTS = (
         ("cash flow", "cash flows", "cashflow", "d&a", "depreciation"),
         "consolidated statement cash flows depreciation amortization",
     ),
+    (
+        ("liquidity", "quick ratio", "current ratio"),
+        "consolidated balance sheets current assets liabilities cash receivables inventories",
+    ),
+    (("margin",), "consolidated statement income operations revenue sales cost earnings"),
+    (("capital-intensive", "capital intensive"), "consolidated balance sheets property plant equipment assets"),
+    (("capital-intensive", "capital intensive"), "consolidated statement cash flows capital expenditures depreciation"),
+    (
+        ("growth", "m&a", "segment", "product categories", "service categories"),
+        "segment organic sales revenue acquisition divestiture business",
+    ),
+    (("concentration",), "major significant customer customers concentration percent revenue sales"),
+    (
+        ("customer",),
+        "primary major principal largest customer customers markets clients government commercial defense contract",
+    ),
+    (("cyclic",), "cyclical cycle economic economy demand commercial business"),
+    (("tax rate",), "income tax taxes effective rate reconciliation provision benefit"),
+    (("retain", "retention", "loyalty"), "retention attrition loyalty engagement customers members cards"),
     (("balance sheet", "asset", "liabilit", "equity"), "consolidated balance sheets assets liabilities equity"),
 )
 
 
 def _rank_pages(texts: list[str], question: str) -> list[int]:  # noqa: C901 - query concepts and stable page ranking
+    normalized_question = re.sub(r"[^a-z0-9]", "", question.casefold())
+    issuers = []
+    for text in texts:
+        header = text.partition("\n")[0]
+        match = re.fullmatch(r"(.+?)_(?:19|20)\d{2}.*", header)
+        issuer = re.sub(r"[^a-z0-9]", "", match[1].casefold()) if match else ""
+        issuers.append(issuer)
+    abbreviations = re.findall(r"\b[A-Z]{3,}\b", question)
+
+    def mentions(issuer):
+        if issuer in normalized_question:
+            return True
+        for abbreviation in abbreviations:
+            word = abbreviation.lower()
+            remaining = iter(issuer)
+            if issuer.startswith(word[:2]) and all(letter in remaining for letter in word):
+                return True
+        return False
+
+    matched = [index for index, issuer in enumerate(issuers) if issuer and mentions(issuer)]
+    if matched and len(matched) < len(texts):
+        relevant = _rank_pages([texts[index].partition("\n")[2] for index in matched], question)
+        other = [index for index in range(len(texts)) if index not in set(matched)]
+        return [matched[index] for index in relevant] + other
     documents = [Counter(_terms(text)) for text in texts]
     df = Counter(term for document in documents for term in document)
     average = sum(sum(document.values()) for document in documents) / len(documents) or 1
@@ -220,8 +263,9 @@ def _rank_pages(texts: list[str], question: str) -> list[int]:  # noqa: C901 - q
     # A multi-statement calculation must not lose the income page simply because
     # its cash-flow page matches more of the long natural-language question.
     ordered = []
+    depth = 6 if len(concepts) <= 3 else 4
     for terms in [expanded, *concepts]:
-        for index in rank(terms)[:4]:
+        for index in rank(terms)[:depth]:
             if index not in ordered:
                 ordered.append(index)
     for index in rank(expanded):
