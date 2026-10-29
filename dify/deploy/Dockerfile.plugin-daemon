@@ -1,0 +1,8 @@
+FROM langgenius/dify-api:1.13.0
+USER root
+COPY app/main /app/main
+COPY app/entrypoint.sh /app/entrypoint.sh
+WORKDIR /app
+ENV PLATFORM=local GIN_MODE=release UV_PATH=/usr/local/bin/uv
+ENTRYPOINT []
+CMD ["/bin/bash", "-c", "/app/entrypoint.sh"]

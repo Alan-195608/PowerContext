@@ -1,0 +1,40 @@
+{
+  "plugin": "langgenius/openai_api_compatible:0.0.73@4cf123ffaa4556f079bed6c47f3a462cc825504b859b183239e74eb19136a4b5",
+  "installation": {
+    "all_installed": false,
+    "task_id": "01a18893-76f7-773d-b8ab-911721d5eda0",
+    "final_task": {
+      "id": "01a18893-76f7-773d-b8ab-911721d5eda0",
+      "created_at": "2026-10-29T16:52:08.055487Z",
+      "updated_at": "2026-10-29T16:52:20.236958Z",
+      "status": "success",
+      "total_plugins": 1,
+      "completed_plugins": 1,
+      "plugins": [
+        {
+          "plugin_unique_identifier": "langgenius/openai_api_compatible:0.0.73@4cf123ffaa4556f079bed6c47f3a462cc825504b859b183239e74eb19136a4b5",
+          "plugin_id": "langgenius/openai_api_compatible",
+          "status": "success",
+          "message": "installed",
+          "icon": "fb1d7c05088e34ecabd0e087ebcfd929be9aad785b5e21e0577c2aa82acf7ae0.svg",
+          "labels": {
+            "en_US": "OpenAI-API-compatible",
+            "zh_Hans": "OpenAI-API-compatible",
+            "pt_BR": "OpenAI-API-compatible",
+            "ja_JP": "OpenAI-API-compatible"
+          }
+        }
+      ]
+    }
+  },
+  "model": {
+    "provider": "langgenius/openai_api_compatible/openai_api_compatible",
+    "model": "deepseek-flash",
+    "endpoint": "https://api.deepseek.com/v1",
+    "result": {
+      "result": "success"
+    },
+    "compatibility_mode": "extended",
+    "thinking": "disabled"
+  }
+}

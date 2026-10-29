@@ -6,7 +6,7 @@ app:
   icon_background: '#E0E7FF'
   use_icon_as_answer_icon: false
 kind: app
-version: 0.3.0
+version: 0.6.0
 dependencies: []
 workflow:
   conversation_variables: []

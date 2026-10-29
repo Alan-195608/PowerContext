@@ -1,0 +1,9 @@
+{
+  "runtime_image": "dify-loop-plugin-daemon:0.5.3",
+  "official_binary_source": "langgenius/dify-plugin-daemon:0.5.3-local",
+  "base_image": "langgenius/dify-api:1.13.0",
+  "binary_modified": false,
+  "main_sha256": "0f2d4c92128710573a22ae041d09b504497b04d5353bd9f09a942cc36116f6c9",
+  "entrypoint_sha256": "626f4f58b0551e4baeb31bf931a6c06acda3de4fbdcd52878544be7ba5e049cb",
+  "source_layer_sha256": "1216f91ab6251f6414597a8ec3b09c730389f09b4449126482b1e36d5865896c"
+}

@@ -107,8 +107,7 @@ with tempfile.TemporaryDirectory() as directory:
                 "bad ending",
                 "unknown action rejected",
             ],
-            "dify_runtime_verified": False,
-            "llm_verified": False,
+            "verification_scope": "game HTTP and PowerContext; full Dify evidence is in evidence/dify",
             "records": records,
         }
         (root / "evidence" / "acceptance.json").write_text(

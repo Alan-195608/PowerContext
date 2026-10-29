@@ -1,0 +1,50 @@
+{
+  "dify_version": "1.13.0",
+  "dsl_version": "0.6.0",
+  "services": [
+    {
+      "service": "api",
+      "image_reference": "langgenius/dify-api:1.13.0",
+      "image_id": "sha256:5f622b4d0b39bdc6d3b401063cfb60962fa92dcc63f55daccec138f98b260e67",
+      "status": "running"
+    },
+    {
+      "service": "worker",
+      "image_reference": "langgenius/dify-api:1.13.0",
+      "image_id": "sha256:5f622b4d0b39bdc6d3b401063cfb60962fa92dcc63f55daccec138f98b260e67",
+      "status": "running"
+    },
+    {
+      "service": "web",
+      "image_reference": "langgenius/dify-web:1.13.0",
+      "image_id": "sha256:30339b4d5060488fac147ddc6fb40438ef71cd5f5dfdeb26c886768302bf7197",
+      "status": "running"
+    },
+    {
+      "service": "sandbox",
+      "image_reference": "langgenius/dify-sandbox:0.2.12",
+      "image_id": "sha256:4e65e8a351a2b17d11750b65403527a347e5cb938bc2271521ca7d689c008ad3",
+      "status": "running"
+    },
+    {
+      "service": "plugin_daemon",
+      "image_reference": "dify-loop-plugin-daemon:0.5.3",
+      "image_id": "sha256:d080a13210167585ea9ab2b8870969a5ddb3606cd4b5cd82f3c5fdf063cf26ac",
+      "status": "running"
+    },
+    {
+      "service": "db_postgres",
+      "image_reference": "postgres:15-alpine",
+      "image_id": "sha256:54e0dd8e8cddcdbb9156c2486eed5a43eccb7214d7c6828097d41ce049fb3984",
+      "status": "running"
+    },
+    {
+      "service": "redis",
+      "image_reference": "redis:6-alpine",
+      "image_id": "sha256:63d5174750e285bc3069c4519c53c8b6de6ebe70715140a6c9d21d6f04b77319",
+      "status": "running"
+    }
+  ],
+  "powercontext_source": "https://github.com/oceanbase/powercontext/tree/dab240063bfcfa7917898dc44da4baadb3747bd0",
+  "plugin_runtime_note": "Official unmodified 0.5.3 daemon executable, repackaged on the Dify API Python base; provenance in plugin-runtime.json."
+}

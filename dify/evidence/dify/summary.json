@@ -1,0 +1,358 @@
+{
+  "result": "PASS",
+  "verification": "real Dify 1.13.0 Console HTTP import and Chatflow execution",
+  "dify_runtime_verified": true,
+  "llm_verified": true,
+  "mock_services": false,
+  "provider": "langgenius/openai_api_compatible/openai_api_compatible",
+  "model": "deepseek-flash",
+  "app_id": "1e6db8c2-c60f-49c9-b32c-36a1c5caa759",
+  "checks": [
+    "both DSL files imported",
+    "all nodes succeeded",
+    "real LLM returned dialogue",
+    "PowerContext recall consumed by HTTP node",
+    "new Dify conversation reused memory",
+    "player isolation",
+    "true ending",
+    "bad ending",
+    "workflow published"
+  ],
+  "imports": {
+    "time-loop-no-model.yml": {
+      "response": {
+        "id": "36ecb8b3-0515-4f82-965f-9bb81a1c494f",
+        "status": "completed",
+        "app_id": "a5446f48-3b8a-45c4-aaf6-bfb1c423fb42",
+        "app_mode": "advanced-chat",
+        "current_dsl_version": "0.6.0",
+        "imported_dsl_version": "0.6.0",
+        "error": ""
+      },
+      "sha256": "ef396603a58d736e8e998bda0cba8f2988af48d5f639f5eea25ca83cb82b2ac8"
+    },
+    "time-loop.yml": {
+      "response": {
+        "id": "92289c11-d63c-4732-8d1d-f23c0ff77bee",
+        "status": "completed",
+        "app_id": "1e6db8c2-c60f-49c9-b32c-36a1c5caa759",
+        "app_mode": "advanced-chat",
+        "current_dsl_version": "0.6.0",
+        "imported_dsl_version": "0.6.0",
+        "error": ""
+      },
+      "sha256": "9278687c521e55a074b8d3cb14b4727d69c789c331e36371aeb4e6f6ad79bc76"
+    }
+  },
+  "runs": [
+    {
+      "file": "00-no-model.json",
+      "action": "开始",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 1,
+        "steps": 0,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": []
+    },
+    {
+      "file": "01-ai.json",
+      "action": "开始",
+      "workflow_run_id": "bd6014b0-bca6-4871-ab4e-605e4ffcb218",
+      "conversation_id": "02fd5e28-9123-4b8a-8b01-476d3532bdde",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 1,
+        "steps": 0,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [],
+      "llm_output": "欢迎回来，第一次来的客人。雨把街道折成收据，您想买点什么？"
+    },
+    {
+      "file": "02-ai.json",
+      "action": "看收据",
+      "workflow_run_id": "2e0a5b1b-f44b-40b4-85c3-5b9608f82811",
+      "conversation_id": "02fd5e28-9123-4b8a-8b01-476d3532bdde",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 1,
+        "steps": 1,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。"
+      ],
+      "llm_output": "收据背面写着：断电后，把热牛奶递给店员。"
+    },
+    {
+      "file": "03-ai.json",
+      "action": "听广播",
+      "workflow_run_id": "e03fd31d-b5f6-473f-bfc0-4b09c1c46920",
+      "conversation_id": "02fd5e28-9123-4b8a-8b01-476d3532bdde",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 1,
+        "steps": 2,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "别开门，先拉电闸——雨才会停。"
+    },
+    {
+      "file": "04-ai.json",
+      "action": "重来",
+      "workflow_run_id": "40114c71-5208-4490-972f-d252f7565477",
+      "conversation_id": "02fd5e28-9123-4b8a-8b01-476d3532bdde",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 0,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "货架恢复了，可我还记得收据背面的字——断电后把热牛奶递给你。"
+    },
+    {
+      "file": "05-ai.json",
+      "action": "状态",
+      "workflow_run_id": "562d8cb4-704a-400d-b884-b51c4ad7b32c",
+      "conversation_id": "9603d278-3e54-414b-864c-73b27bb80acc",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 0,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "收据上写着断电后把热牛奶递给我，可广播又说先拉电闸别开门——你信哪个？"
+    },
+    {
+      "file": "06-ai.json",
+      "action": "买牛奶",
+      "workflow_run_id": "5bbfe9f5-aadc-4b6b-acf9-3b75d8c546cd",
+      "conversation_id": "9603d278-3e54-414b-864c-73b27bb80acc",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 1,
+        "milk": true,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "这瓶热牛奶瓶底标价“一个昨天”，收据说断电后递给我。"
+    },
+    {
+      "file": "07-ai.json",
+      "action": "拉电闸",
+      "workflow_run_id": "019515e2-b557-4d73-8d83-7eb7c557ab83",
+      "conversation_id": "9603d278-3e54-414b-864c-73b27bb80acc",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 2,
+        "milk": true,
+        "power": false,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "雨停了，电也断了；把热牛奶递给我吧。"
+    },
+    {
+      "file": "08-ai.json",
+      "action": "递牛奶",
+      "workflow_run_id": "3348746f-da5b-425d-9e7f-8374efdade31",
+      "conversation_id": "9603d278-3e54-414b-864c-73b27bb80acc",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 3,
+        "milk": false,
+        "power": false,
+        "trusted": true,
+        "won": false
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "“你终于记住了。”店员接过热牛奶，眼睛恢复成人类的颜色。"
+    },
+    {
+      "file": "09-ai.json",
+      "action": "开门",
+      "workflow_run_id": "c86cfa2f-37dd-47f0-932d-ad44768293a8",
+      "conversation_id": "9603d278-3e54-414b-864c-73b27bb80acc",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 4,
+        "milk": false,
+        "power": false,
+        "trusted": true,
+        "won": true
+      },
+      "notebook": [
+        "收据背面写着：断电后，把热牛奶递给店员。",
+        "广播反复说：不要开门！先拉下电闸，门外的雨才会停。"
+      ],
+      "llm_output": "天亮了，门开着——明天照常营业。"
+    },
+    {
+      "file": "10-isolation.json",
+      "action": "开始",
+      "workflow_run_id": "a561535d-0c5b-4a85-a3ba-c52a199f8878",
+      "conversation_id": "a6378b8d-1120-4432-bd31-0e0aaa588b42",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 1,
+        "steps": 0,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [],
+      "llm_output": "雨把街道折成收据的夜里，欢迎回来，第一次来的客人。"
+    },
+    {
+      "file": "11-bad-ending.json",
+      "action": "开门",
+      "workflow_run_id": "311c18f3-521c-40ca-82ba-0f29429a1265",
+      "conversation_id": "a6378b8d-1120-4432-bd31-0e0aaa588b42",
+      "nodes": {
+        "start": "succeeded",
+        "encode": "succeeded",
+        "http": "succeeded",
+        "parse": "succeeded",
+        "narrate": "succeeded",
+        "answer": "succeeded"
+      },
+      "state": {
+        "loop": 2,
+        "steps": 0,
+        "milk": false,
+        "power": true,
+        "trusted": false,
+        "won": false
+      },
+      "notebook": [],
+      "llm_output": "门外那个你还在雨里等着，钟表已经倒转了——这轮又要归零了。"
+    }
+  ]
+}

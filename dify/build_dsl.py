@@ -1,4 +1,4 @@
-"""Generate portable Dify Chatflow DSL (target: Dify 1.13.0, DSL 0.3.0)."""
+"""Generate Dify 1.13.0 Chatflow DSL, including the pinned model plugin."""
 
 from pathlib import Path
 import copy
@@ -105,7 +105,7 @@ base = {
         "use_icon_as_answer_icon": False,
     },
     "kind": "app",
-    "version": "0.3.0",
+    "version": "0.6.0",
     "dependencies": [],
     "workflow": {
         "conversation_variables": [],
@@ -153,10 +153,10 @@ def write(name, ai):
                 "llm",
                 "AI 店员即兴对白",
                 model={
-                    "provider": "langgenius/openai/openai",
-                    "name": "gpt-4o-mini",
+                    "provider": "langgenius/openai_api_compatible/openai_api_compatible",
+                    "name": "deepseek-flash",
                     "mode": "chat",
-                    "completion_params": {"temperature": 0.7},
+                    "completion_params": {"temperature": 0.7, "max_tokens": 256},
                 },
                 prompt_template=[
                     {
@@ -185,9 +185,20 @@ def write(name, ai):
         )
     )
     doc = copy.deepcopy(base)
+    if ai:
+        doc["dependencies"] = [
+            {
+                "type": "marketplace",
+                "value": {
+                    "marketplace_plugin_unique_identifier": "langgenius/openai_api_compatible:0.0.73@4cf123ffaa4556f079bed6c47f3a462cc825504b859b183239e74eb19136a4b5"
+                },
+            }
+        ]
     if not ai:
         doc["app"]["name"] += "（免模型验证版）"
     edges = []
+    for index, item in enumerate(ns):
+        item["position"] = {"x": 80 + index * 310, "y": 200}
     for a, b in zip(ns, ns[1:]):
         edges.append(
             {

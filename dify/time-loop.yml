@@ -6,8 +6,11 @@ app:
   icon_background: '#E0E7FF'
   use_icon_as_answer_icon: false
 kind: app
-version: 0.3.0
-dependencies: []
+version: 0.6.0
+dependencies:
+- type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/openai_api_compatible:0.0.73@4cf123ffaa4556f079bed6c47f3a462cc825504b859b183239e74eb19136a4b5
 workflow:
   conversation_variables: []
   environment_variables:
@@ -185,11 +188,12 @@ workflow:
         desc: ''
         selected: false
         model:
-          provider: langgenius/openai/openai
-          name: gpt-4o-mini
+          provider: langgenius/openai_api_compatible/openai_api_compatible
+          name: deepseek-flash
           mode: chat
           completion_params:
             temperature: 0.7
+            max_tokens: 256
         prompt_template:
         - id: system
           role: system
@@ -207,7 +211,7 @@ workflow:
     - id: answer
       type: custom
       position:
-        x: 1320
+        x: 1630
         y: 200
       width: 270
       height: 100

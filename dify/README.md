@@ -1,82 +1,90 @@
 # 23:57 时间循环便利店
 
-你被困在永远停在 23:57 的便利店。物品会随午夜清零，发现的秘密却会写入 PowerContext。收集线索、进入下一轮，再用记忆改变结局。默认三次行动，找齐两条线索后获得额外一次行动；“开始”“状态”不消耗行动。“重来”清空本轮物品和进度，保留已发现的秘密。
+一个由 Dify 编排、AI 店员即兴回应、PowerContext 保存跨轮记忆的解谜小游戏。你被困在永远停在 23:57 的便利店，物品会在午夜清零，发现的秘密却能留到下一轮，帮助你改变结局。
 
-## 技术分工
+**已完成真实 Dify 1.13.0 验证：两个 DSL 导入成功，12 次工作流运行成功；正式发布后的 `/v1/chat-messages` API 另完成 3 次验证。** 结果来自实际 Dify 服务、代码沙箱、插件守护进程、DeepSeek 模型和 PowerContext，没有替代服务。证据见 [完整验收汇总](evidence/dify/summary.json) 和 [正式 API 汇总](evidence/dify/production-summary.json)。
 
-- Dify Chatflow：玩家输入 → JSON 安全编码 → HTTP 工具调用 → 提取权威结果 → 模型生成店员对白 → 展示结果。AI 的对白与确定性裁判结果分开展示。
-- PowerContext：每个玩家独立 Scope；观察动作通过 `/v1/memory/remember` 保存发现；每次行动通过 `/v1/context/prepare` 召回线索。电闸和递牛奶的判定实际依赖召回结果，数据库断连会导致操作失败，不会伪装成记忆成功。
-- Python 后端：规则判定、行动次数、牛奶与电闸状态。SQLite 仅保存本轮状态和请求去重结果，跨轮笔记仅从 PowerContext 获得。无需 seekdb、Embedding 或 Rerank。
+## 玩法与技术分工
 
-输入仅接受菜单中的明确行动。AI 负责即兴对白，不支持自由语言动作判定，也不能修改胜负。两条线索都来自原创固定剧本，没有外部素材或知识库。
+每轮有三次行动，找齐收据和广播两条线索后，每轮获得额外一次行动。“开始”“状态”不消耗行动；“重来”清空本轮物品、进度和信任，保留发现的秘密。支持菜单中的明确行动，暂不支持自由语言动作判定。
 
-## 环境与版本
+- **Dify**：输入 → Code 编码 → HTTP 执行行动并召回记忆 → Code 提取权威结果 → LLM 店员对白 → Answer 展示。正式 AI 版六个节点均在真实 Dify 中运行。
+- **PowerContext**：每个玩家对应独立 Scope。观察动作通过 `/v1/memory/remember` 保存发现，每次行动通过 `/v1/context/prepare` 召回；电闸和递牛奶的判定实际依赖召回结果，服务不可用会显式失败。
+- **Python 后端**：确定性判定行动、物品、电闸、信任和结局；SQLite 保存本轮状态及请求去重。跨轮笔记从 PowerContext 读取，不从 SQLite 伪造。
+- **真实模型**：生成氛围对白，不修改权威状态或决定胜负。模型配置使用扩展兼容模式并关闭思考输出，避免思考过程耗尽短对白的输出额度。
 
-Python 3.12、Git、uv。后端和验证脚本仅用 Python 标准库。PowerContext 固定使用官方 `2026-competition` 提交 `dab240063bfcfa7917898dc44da4baadb3747bd0`，安装 `cli,server` extras（依赖由该提交声明，首次安装需联网）。DSL 以 Dify 1.13.0 的节点结构、DSL 0.3.0 为目标；**未在真实 Dify 实例导入验证**。DSL 生成脚本需要 PyYAML，已提交生成好的 YAML，运行作品无需执行生成脚本。
+不需要 seekdb、Embedding、Rerank、外部知识库或自定义 Dify 插件。剧本和游戏代码为本作品编写；模型插件使用原始官方安装包。
 
-## 本地启动与体验
+## 交付文件
 
-在本目录执行：
+| 文件 | 用途 |
+| --- | --- |
+| `time-loop.yml` | 正式 AI Chatflow；Dify 1.13.0、DSL 0.6.0 |
+| `time-loop-no-model.yml` | 五节点免模型版，用于独立检查流程、网络与记忆；与 AI 版无导入顺序依赖 |
+| `game.py`、`start.sh`、`play.py` | 游戏服务、PowerContext 启动脚本、本地终端体验入口 |
+| `plugins/` | 官方 `openai_api_compatible` 0.0.73 安装包、来源与校验值 |
+| `deploy/` | 真实 Dify 部署、初始化和模型配置脚本；[详细运行说明](deploy/README.md) |
+| `verify_dify.py` | 正式 Console API 导入、完整节点及玩法验收 |
+| `verify_published.py` | 已发布应用的正式 `/v1/chat-messages` 验收 |
+| `verify.py` | 游戏与 PowerContext 的补充行为测试 |
+| `evidence/dify/` | Dify 导入响应、原始 SSE 事件数据、节点输出、发布结果、模型与运行环境记录 |
+| `evidence/acceptance.json` | 后端补充测试记录，不能替代 Dify 验收 |
+
+## 环境与完整启动
+
+需要 Python 3.12、Git、uv、Docker 和至少 6 GiB 可用内存。PowerContext 固定为官方提交 `dab240063bfcfa7917898dc44da4baadb3747bd0`，使用 `cli,server` extras；应用运行只依赖 Python 标准库，部署脚本使用该环境已有的 httpx 和 PyYAML。Dify API/Web/Worker 为 1.13.0，Sandbox 为 0.2.12，模型为 `deepseek-flash`。
+
+在本目录执行并保持终端运行：
 
 ```bash
-bash start.sh
+GAME_HOST=0.0.0.0 bash start.sh
 ```
-
-脚本首次创建 `.venv` 并安装固定提交，启动 PowerContext 18765 和游戏服务 18766。PowerContext 使用独立的 `.runtime/powercontext`，不会改动已有个人记忆。Ctrl+C 结束本次服务。再次运行可继续存档。
 
 另开终端进入本目录：
 
 ```bash
-python3 play.py
+.venv/bin/python deploy/prepare_stack.py
+docker-compose -f .runtime/dify-stack/compose.yml --env-file .runtime/dify-stack/.env up -d
+export MODEL_API_KEY='<自己的模型 API Key>'
+.venv/bin/python deploy/install_model.py
+unset MODEL_API_KEY
+.venv/bin/python verify_dify.py
+.venv/bin/python verify_published.py
 ```
 
-终端会显示随机玩家通行证。恢复存档时设置 `PLAYER_TICKET` 为同一值再运行 `play.py`。通行证是持有即可访问存档的凭据，请使用随机值；可通过 `python3 -c 'import secrets; print(secrets.token_hex(16))'` 生成。每位玩家使用不同通行证。终端入口只验证游戏和记忆服务，不代表 Dify 已验收。
+有 Docker Compose 插件时可把 `docker-compose` 换为 `docker compose`。模型地址默认 `https://api.deepseek.com/v1`；通过 `MODEL_BASE_URL`、`MODEL_NAME` 修改。更换模型名称时，同时修改 DSL 的 LLM 节点。插件安装需要联网获取其 Python 依赖，模型 API 需要可达的网络及可用额度。
 
-## Dify 导入和配置
+工作台入口为 `http://localhost:18771`，正式 API 为 `http://localhost:18770`。脚本初始化的本地验收管理员凭据在 `.runtime/console-account.json`，仅当前用户可读，不纳入提交。也可在现有工作台手动安装插件、配置模型、导入 DSL 并发布。
 
-1. 准备 Dify 自部署 1.13.0 或现有工作台。自部署参考 [官方部署说明](https://docs.dify.ai/en/self-host/quick-start/docker-compose)。本项目不包含 Dify 平台自身。
-2. 在工作室选择“导入 DSL”，导入 `time-loop-no-model.yml`，此文件无需模型或插件，是排查网络和记忆链路的入口。
-3. 应用环境变量 `GAME_URL` 默认 `http://host.docker.internal:18766`。Dify Docker 中的 localhost 是容器本身，必须填 Dify **服务端可访问**的游戏地址。Mac Docker 访问本机服务时，启动游戏前设置 `GAME_HOST=0.0.0.0`；Linux Docker 需增加 host-gateway 映射或设置可达的宿主机 IP。Dify 的 SSRF 代理必须允许这个受控的本地服务地址。后端不应直接暴露到公网。
-4. 填写玩家通行证，发送“开始”，随后发送菜单中的行动。换一个新会话、保留相同通行证，发送“状态”应显示历史笔记。
-5. 单独导入 `time-loop.yml` 作为正式 AI 版。它与免模型版是两个独立应用，没有导入顺序依赖。模型节点默认 OpenAI 插件路径 `langgenius/openai/openai`、`gpt-4o-mini`；请在工作台安装其可用版本、配置自己的模型凭据，然后重新选择模型。也可换成已配置的其他聊天模型。所需插件版本取决于目标工作台，尚无经过验证的固定插件版本；实际提交时应补录。
-6. 调试成功后发布 Dify 应用，以发布的 WebApp 或 API 作为评审入口。AI 服务失败会使 AI 版回答失败，游戏行动可能已经提交；用“状态”核对，不要再次发送会扣行动的命令。可使用免模型版继续同一通行证的存档。
+**本次实测的插件守护进程部署方式：** 原版 0.5.3 可执行文件从官方 ARM64 镜像层提取，未修改，使用 `deploy/Dockerfile.plugin-daemon` 放入已有 Dify API Python 基础镜像；没有使用原镜像中与本应用无关的图像及编译依赖层。来源层及二进制 SHA256 见 `evidence/dify/plugin-runtime.json`，实际服务镜像见 `runtime.json`。按同样方式复现见 [插件运行环境说明](deploy/README.md#插件守护进程的实测运行环境)；也可以直接运行默认官方完整 `0.5.3-local` 镜像。完整官方镜像的部署方式未在本次环境运行，不能与已验证的重打包方式混为一谈。
 
-Dify 的模型凭据仅存工作台。启用 PowerContext 服务端鉴权时，在游戏进程环境设置 `POWERCONTEXT_TOKEN`，不把它送入模型。项目没有实际 API Key 或密码。
+## 手动导入与验证样例
 
-## 完整验证样例
+1. 在 Dify 工作室选择“导入 DSL”，导入 `time-loop.yml`。
+2. 安装 `plugins/` 中的官方插件。在 OpenAI-API-compatible 中添加聊天模型 `deepseek-flash`，填写自己的 API Key 和 `https://api.deepseek.com/v1`，设为 chat 模式、扩展兼容模式、思考能力不支持；与自动配置脚本一致。
+3. 环境变量 `GAME_URL` 默认 `http://host.docker.internal:18766`。它必须是 **Dify 服务端**可访问的游戏地址。Mac Docker/Colima 可用此地址；Linux Docker 需配置 host-gateway 或可达的宿主机地址。Dify Cloud 不能直接访问你本机的 localhost。
+4. 为每位玩家生成不同的随机通行证，填写后按表格顺序输入。通行证是存档凭据，请保存并避免使用他人可猜测的值。
 
-初始条件：服务已启动，使用新生成的玩家通行证，没有笔记。按顺序输入：
-
-| 步骤 | 输入 | 应观察到的表现 |
+| 步骤 | 输入/操作 | 预期表现 |
 | --- | --- | --- |
-| 1 | 开始 | 第 1 轮，笔记为空 |
-| 2 | 看收据 | PowerContext 写入收据线索，笔记出现 1 条 |
-| 3 | 听广播 | 写入广播线索，笔记出现 2 条，获得第 4 次行动额度 |
-| 4 | 重来 | 第 2 轮；物品清空，笔记仍为 2 条 |
-| 5 | 新建 Dify 会话，填相同通行证，输入 状态 | 不依赖旧会话历史仍能看到两条记忆 |
-| 6 | 买牛奶 | 得到热牛奶，剩余 3 次行动 |
-| 7 | 拉电闸 | 因召回广播线索而成功断电 |
-| 8 | 递牛奶 | 因收据记忆、牛奶和断电条件同时满足而取得信任 |
+| 1 | 新通行证，开始 | 第 1 轮，笔记为空 |
+| 2 | 看收据 | 收据秘密写入 PowerContext，笔记出现 1 条 |
+| 3 | 听广播 | 广播秘密写入，笔记出现 2 条，获得额外行动 |
+| 4 | 重来 | 第 2 轮，物品清空，笔记保留 |
+| 5 | 新建 Dify 会话，填写同一通行证，状态 | 新 conversation_id 中仍可读取两条记忆 |
+| 6 | 买牛奶 | 得到热牛奶 |
+| 7 | 拉电闸 | 依靠广播记忆成功断电 |
+| 8 | 递牛奶 | 收据记忆、牛奶、断电条件共同产生店员信任 |
 | 9 | 开门 | 真结局“明天照常营业” |
 
-坏结局：用另一通行证直接“开门”，进入下一轮，不能通关。玩家隔离：另一通行证“状态”应无笔记。恢复全新状态：使用新通行证；“重来”保留记忆是设计行为，不是彻底删除存档。
+另一通行证“开始”应无笔记，直接“开门”进入坏结局并重置本轮。使用新通行证可以恢复全新状态；“重来”保留记忆是玩法设计。终端入口 `python3 play.py` 可体验后端，恢复存档时设置 `PLAYER_TICKET`；终端运行不代表 Dify 验收。
 
-## 自动验证与证据
+## 运行证据与边界
 
-保持 PowerContext 启动，在本目录执行：
+`evidence/dify/00-no-model.json` 为五节点成功记录，`01-ai.json` 至 `11-bad-ending.json` 包含 AI 流程、两个不同会话、两个玩家和结局；每份记录保留 Dify 返回的 workflow_run_id、node_id、状态、HTTP 输出和模型 usage。`production-*.json` 来自发布后的正式 API，包含新会话记忆复用。`imports.json` 记录输入 DSL 的 SHA256；最终提交的 YAML 与被验证文件对应。
 
-```bash
-.venv/bin/python verify.py
-```
+游戏服务为单进程演示设计，不支持多实例并发。客户端需复用同一 request_id 才能对网络重试去重，Dify HTTP 节点重试复用同一次 workflow_run_id。跨系统没有分布式事务，故障时线索可能先写入，状态尚未提交；重试会检查已存在标记。模型服务失败时，行动可能已提交，应先“状态”核对，避免重复扣行动。部署服务和 API Key 均由运行者提供，本地执行成功不代表赛事平台已经重新判定通过。
 
-验证脚本使用独立临时 SQLite、随机玩家、端口 18767 的真实 HTTP 游戏进程，实际调用 PowerContext，覆盖通关、失败、记忆持久化、进程重启、玩家隔离、请求幂等和非法输入。日志写入 `evidence/acceptance.json`，包含每个操作的真实返回值及 PreparedContext 召回内容。可重复运行，不覆盖已有玩家进度。
+## 来源与提交位置
 
-当前已验证：本地游戏 HTTP 和真实 PowerContext 读写。尚未验证：Dify 导入、Dify 节点执行、模型 API 输出、Docker 联网。日志中的这两项验证标志明确为 false，不能作为完整 Dify 运行证据。赛前需完成上面的 Dify 操作并补充节点截图/执行日志。
-
-单进程游戏服务顺序处理请求，适合演示；不支持多实例并发部署。客户端必须复用相同 request_id 才能对网络重试去重，Dify HTTP 节点重试复用同一次 workflow_run_id。跨系统没有分布式事务：故障时显式线索可能先写入而游戏状态尚未提交，重试会检查已存在的标记；不会重复消耗已成功提交的同一请求。
-
-## 提交位置和来源
-
-本分支从官方 `2026-competition-ecosystem` 的 `d647275c` 创建，作品全部放在 `dify/`。赛题来源为 [官方 Dify 赛题](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/lhfslihtnnb8yqh6)。HTTP 节点字段参考 [Dify 1.13.0 官方源码](https://github.com/langgenius/dify/blob/1.13.0/api/core/workflow/nodes/http_request/entities.py)，PowerContext 接口参考固定提交中的 OpenAPI。未复用其他游戏 DSL。
-
-提交时将本分支变更同步至参赛私有仓库的同名基础分支，在测评平台填写已推送分支或 commit hash。当前本地完成不代表已经提交测评。
+作品基于官方 `2026-competition-ecosystem` 的 `d647275c` 开发，全部提交资产位于 `dify/`。赛题来源：[官方 Dify 赛题](https://oceanbase.yuque.com/org-wiki-obtech-vh7w9r/hc3pio/lhfslihtnnb8yqh6)。部署源文件来自 [Dify 1.13.0](https://github.com/langgenius/dify/tree/1.13.0/docker)，模型插件来源见 `plugins/README.md`。模型、运行环境和代码验证已使用 AI 辅助完成，实际日志可独立核查。

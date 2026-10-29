@@ -1,0 +1,28 @@
+{
+  "result": "PASS",
+  "app_id": "1e6db8c2-c60f-49c9-b32c-36a1c5caa759",
+  "mock_services": false,
+  "runs": [
+    {
+      "query": "开始",
+      "conversation_id": "07c0aa9e-ac69-460f-a688-a6d2b21c61b0",
+      "workflow_run_id": "6de63d81-2ffb-4086-8c13-79453517d9ef",
+      "answer": "店员低声说：“欢迎回来，第一次来的客人。雨把街道折成收据，现在是23:57。”\n\n23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\n\n第 1 轮 · 剩余行动 3\n跨轮笔记：暂无\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+      "status": "succeeded"
+    },
+    {
+      "query": "看收据",
+      "conversation_id": "07c0aa9e-ac69-460f-a688-a6d2b21c61b0",
+      "workflow_run_id": "ce52690c-8332-4465-9dd9-d4c4b89b0fa9",
+      "answer": "店员低声说：收据背面写着：断电后，把热牛奶递给店员。\n\n收据背面写着：断电后，把热牛奶递给店员。\n\n第 1 轮 · 剩余行动 2\n跨轮笔记：收据背面写着：断电后，把热牛奶递给店员。\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+      "status": "succeeded"
+    },
+    {
+      "query": "状态",
+      "conversation_id": "bf827970-e2a2-4ff1-ae50-c291cc9b1bf4",
+      "workflow_run_id": "9ab997cc-fcbf-4e70-9ec0-65c603f9c1e3",
+      "answer": "店员低声说：你翻开跨轮笔记，收据背面写着：断电后，把热牛奶递给店员。\n\n你翻开跨轮笔记。查看记忆不会消耗行动。\n\n第 1 轮 · 剩余行动 2\n跨轮笔记：收据背面写着：断电后，把热牛奶递给店员。\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+      "status": "succeeded"
+    }
+  ]
+}

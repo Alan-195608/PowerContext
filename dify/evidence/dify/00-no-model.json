@@ -1,0 +1,396 @@
+{
+  "app_id": "a5446f48-3b8a-45c4-aaf6-bfb1c423fb42",
+  "request": {
+    "query": "开始",
+    "inputs": {
+      "player": "b058f44b7e9a4d6575455f9fb52f9349"
+    },
+    "conversation_id": null
+  },
+  "events": [
+    {
+      "event": "workflow_started",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+        "workflow_id": "92a84f61-2bac-48c7-8a3d-147968833cf1",
+        "inputs": {
+          "player": "b058f44b7e9a4d6575455f9fb52f9349",
+          "sys.files": [],
+          "sys.user_id": "c866eb8e-262e-4693-91b3-9363c88eabe2",
+          "sys.app_id": "a5446f48-3b8a-45c4-aaf6-bfb1c423fb42",
+          "sys.workflow_id": "92a84f61-2bac-48c7-8a3d-147968833cf1",
+          "sys.workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+          "sys.query": "开始",
+          "sys.dialogue_count": 1
+        },
+        "created_at": 1793292886,
+        "reason": "initial"
+      }
+    },
+    {
+      "event": "node_started",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "a5a5161f-e9b2-4cca-a90b-2e4172de9b9f",
+        "node_id": "start",
+        "node_type": "start",
+        "title": "玩家通行证",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": null,
+        "inputs_truncated": false,
+        "created_at": 1793292886,
+        "extras": {},
+        "iteration_id": null,
+        "loop_id": null,
+        "agent_strategy": null
+      }
+    },
+    {
+      "event": "node_finished",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "a5a5161f-e9b2-4cca-a90b-2e4172de9b9f",
+        "node_id": "start",
+        "node_type": "start",
+        "title": "玩家通行证",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": {
+          "player": "b058f44b7e9a4d6575455f9fb52f9349",
+          "sys.files": [],
+          "sys.user_id": "c866eb8e-262e-4693-91b3-9363c88eabe2",
+          "sys.app_id": "a5446f48-3b8a-45c4-aaf6-bfb1c423fb42",
+          "sys.workflow_id": "92a84f61-2bac-48c7-8a3d-147968833cf1",
+          "sys.workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+          "sys.query": "开始",
+          "sys.conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+          "sys.dialogue_count": 1
+        },
+        "inputs_truncated": false,
+        "process_data": {},
+        "process_data_truncated": false,
+        "outputs": {
+          "player": "b058f44b7e9a4d6575455f9fb52f9349",
+          "sys.files": [],
+          "sys.user_id": "c866eb8e-262e-4693-91b3-9363c88eabe2",
+          "sys.app_id": "a5446f48-3b8a-45c4-aaf6-bfb1c423fb42",
+          "sys.workflow_id": "92a84f61-2bac-48c7-8a3d-147968833cf1",
+          "sys.workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+          "sys.query": "开始",
+          "sys.conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+          "sys.dialogue_count": 1
+        },
+        "outputs_truncated": false,
+        "status": "succeeded",
+        "error": null,
+        "elapsed_time": 0.008851,
+        "execution_metadata": null,
+        "created_at": 1793292886,
+        "finished_at": 1793292886,
+        "files": [],
+        "iteration_id": null,
+        "loop_id": null
+      }
+    },
+    {
+      "event": "node_started",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "0ba2779d-1799-4572-9f4e-1ac6b4252a8c",
+        "node_id": "encode",
+        "node_type": "code",
+        "title": "安全编码输入",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": null,
+        "inputs_truncated": false,
+        "created_at": 1793292886,
+        "extras": {},
+        "iteration_id": null,
+        "loop_id": null,
+        "agent_strategy": null
+      }
+    },
+    {
+      "event": "node_finished",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "0ba2779d-1799-4572-9f4e-1ac6b4252a8c",
+        "node_id": "encode",
+        "node_type": "code",
+        "title": "安全编码输入",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": {
+          "player": "b058f44b7e9a4d6575455f9fb52f9349",
+          "action": "开始",
+          "rid": "28f077a6-ba9e-4160-b450-8891009a0af3"
+        },
+        "inputs_truncated": false,
+        "process_data": {},
+        "process_data_truncated": false,
+        "outputs": {
+          "body": "{\"player\": \"b058f44b7e9a4d6575455f9fb52f9349\", \"action\": \"开始\", \"request_id\": \"28f077a6-ba9e-4160-b450-8891009a0af3\"}"
+        },
+        "outputs_truncated": false,
+        "status": "succeeded",
+        "error": null,
+        "elapsed_time": 0.044504,
+        "execution_metadata": null,
+        "created_at": 1793292886,
+        "finished_at": 1793292886,
+        "files": [],
+        "iteration_id": null,
+        "loop_id": null
+      }
+    },
+    {
+      "event": "node_started",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "2aa3f569-2fae-4904-baaa-ec3fda7e81bf",
+        "node_id": "http",
+        "node_type": "http-request",
+        "title": "执行行动并召回 PowerContext",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": null,
+        "inputs_truncated": false,
+        "created_at": 1793292886,
+        "extras": {},
+        "iteration_id": null,
+        "loop_id": null,
+        "agent_strategy": null
+      }
+    },
+    {
+      "event": "node_finished",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "2aa3f569-2fae-4904-baaa-ec3fda7e81bf",
+        "node_id": "http",
+        "node_type": "http-request",
+        "title": "执行行动并召回 PowerContext",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": {},
+        "inputs_truncated": false,
+        "process_data": {
+          "request": "POST /turn HTTP/1.1\r\nHost: host.docker.internal:18766\r\nContent-Type: application/json\r\nContent-Length: 116\r\n\r\n{\"player\": \"b058f44b7e9a4d6575455f9fb52f9349\", \"action\": \"开始\", \"request_id\": \"28f077a6-ba9e-4160-b450-8891009a0af3\"}"
+        },
+        "process_data_truncated": false,
+        "outputs": {
+          "status_code": 200,
+          "body": "{\"event\": \"23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\", \"state\": {\"loop\": 1, \"steps\": 0, \"milk\": false, \"power\": true, \"trusted\": false, \"won\": false}, \"remaining\": 3, \"notebook\": [], \"powercontext\": {\"scope_id\": \"scp_2hqemacfct6rdsvnytt3hbh80v\", \"status\": \"empty\", \"content\": \"\"}, \"actions\": [\"看收据\", \"听广播\", \"买牛奶\", \"拉电闸\", \"递牛奶\", \"开门\"], \"won\": false, \"display\": \"23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\\n\\n第 1 轮 · 剩余行动 3\\n跨轮笔记：暂无\\n\\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来\"}",
+          "headers": {
+            "content-length": "703",
+            "content-type": "application/json; charset=utf-8",
+            "date": "Thu, 29 Oct 2026 16:54:46 GMT",
+            "server": "BaseHTTP/0.6 Python/3.12.13"
+          },
+          "files": []
+        },
+        "outputs_truncated": false,
+        "status": "succeeded",
+        "error": null,
+        "elapsed_time": 0.051843,
+        "execution_metadata": null,
+        "created_at": 1793292886,
+        "finished_at": 1793292886,
+        "files": [],
+        "iteration_id": null,
+        "loop_id": null
+      }
+    },
+    {
+      "event": "node_started",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "50a244c9-2326-487b-b573-dd6e5dcdfb05",
+        "node_id": "parse",
+        "node_type": "code",
+        "title": "提取权威状态",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": null,
+        "inputs_truncated": false,
+        "created_at": 1793292886,
+        "extras": {},
+        "iteration_id": null,
+        "loop_id": null,
+        "agent_strategy": null
+      }
+    },
+    {
+      "event": "message",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "answer": "23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\n\n第 1 轮 · 剩余行动 3\n跨轮笔记：暂无\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+      "from_variable_selector": [
+        "parse",
+        "display"
+      ]
+    },
+    {
+      "event": "node_finished",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "50a244c9-2326-487b-b573-dd6e5dcdfb05",
+        "node_id": "parse",
+        "node_type": "code",
+        "title": "提取权威状态",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": {
+          "body": "{\"event\": \"23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\", \"state\": {\"loop\": 1, \"steps\": 0, \"milk\": false, \"power\": true, \"trusted\": false, \"won\": false}, \"remaining\": 3, \"notebook\": [], \"powercontext\": {\"scope_id\": \"scp_2hqemacfct6rdsvnytt3hbh80v\", \"status\": \"empty\", \"content\": \"\"}, \"actions\": [\"看收据\", \"听广播\", \"买牛奶\", \"拉电闸\", \"递牛奶\", \"开门\"], \"won\": false, \"display\": \"23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\\n\\n第 1 轮 · 剩余行动 3\\n跨轮笔记：暂无\\n\\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来\"}",
+          "status": 200
+        },
+        "inputs_truncated": false,
+        "process_data": {},
+        "process_data_truncated": false,
+        "outputs": {
+          "display": "23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\n\n第 1 轮 · 剩余行动 3\n跨轮笔记：暂无\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+          "facts": "{\"event\": \"23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\", \"notebook\": [], \"state\": {\"loop\": 1, \"steps\": 0, \"milk\": false, \"power\": true, \"trusted\": false, \"won\": false}}"
+        },
+        "outputs_truncated": false,
+        "status": "succeeded",
+        "error": null,
+        "elapsed_time": 0.036657,
+        "execution_metadata": null,
+        "created_at": 1793292886,
+        "finished_at": 1793292886,
+        "files": [],
+        "iteration_id": null,
+        "loop_id": null
+      }
+    },
+    {
+      "event": "node_started",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "39ca9445-d23a-4d24-9716-56ae4cc98ae6",
+        "node_id": "answer",
+        "node_type": "answer",
+        "title": "行动结果与跨轮笔记",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": null,
+        "inputs_truncated": false,
+        "created_at": 1793292886,
+        "extras": {},
+        "iteration_id": null,
+        "loop_id": null,
+        "agent_strategy": null
+      }
+    },
+    {
+      "event": "node_finished",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "39ca9445-d23a-4d24-9716-56ae4cc98ae6",
+        "node_id": "answer",
+        "node_type": "answer",
+        "title": "行动结果与跨轮笔记",
+        "index": 1,
+        "predecessor_node_id": null,
+        "inputs": {},
+        "inputs_truncated": false,
+        "process_data": {},
+        "process_data_truncated": false,
+        "outputs": {
+          "answer": "23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\n\n第 1 轮 · 剩余行动 3\n跨轮笔记：暂无\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+          "files": []
+        },
+        "outputs_truncated": false,
+        "status": "succeeded",
+        "error": null,
+        "elapsed_time": 0.010972,
+        "execution_metadata": null,
+        "created_at": 1793292886,
+        "finished_at": 1793292886,
+        "files": [],
+        "iteration_id": null,
+        "loop_id": null
+      }
+    },
+    {
+      "event": "workflow_finished",
+      "conversation_id": "7993cdc6-7f69-4e5b-b27e-c0eb71a88a88",
+      "message_id": "ea5af6ef-0de3-48b4-96b6-6c46b321b06e",
+      "created_at": 1793292886,
+      "task_id": "309d394d-6ff3-4858-8d39-bed6f7dbd5b8",
+      "workflow_run_id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+      "data": {
+        "id": "28f077a6-ba9e-4160-b450-8891009a0af3",
+        "workflow_id": "92a84f61-2bac-48c7-8a3d-147968833cf1",
+        "status": "succeeded",
+        "outputs": {
+          "answer": "23:57。雨把街道折成一张收据。店员说：“欢迎回来，第一次来的客人。”\n\n第 1 轮 · 剩余行动 3\n跨轮笔记：暂无\n\n可选：看收据 / 听广播 / 买牛奶 / 拉电闸 / 递牛奶 / 开门 / 状态 / 重来",
+          "files": []
+        },
+        "error": null,
+        "elapsed_time": 0.154492,
+        "total_tokens": 0,
+        "total_steps": 5,
+        "created_by": {
+          "id": "c866eb8e-262e-4693-91b3-9363c88eabe2",
+          "name": "Dify Evaluator",
+          "email": "dify-eval@example.com"
+        },
+        "created_at": 1793292886,
+        "finished_at": 1793292886,
+        "exceptions_count": 0,
+        "files": []
+      }
+    }
+  ]
+}
