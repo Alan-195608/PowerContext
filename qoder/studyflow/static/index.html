@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研途 StudyFlow — 学习科研进度助手</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <div class="header-left">
+                <h1 class="logo">研途 StudyFlow</h1>
+                <span class="tagline">学习科研进度助手</span>
+            </div>
+            <div class="header-right">
+                <div class="powercontext-badge" title="数据由 OceanBase PowerContext 持久化存储">
+                    <span class="badge-dot"></span>
+                    <span>PowerContext</span>
+                </div>
+                <button id="theme-toggle" class="btn-icon" title="切换主题">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="record">记录</button>
+            <button class="tab-btn" data-tab="timeline">时间线</button>
+            <button class="tab-btn" data-tab="suggest">继续学习</button>
+            <button class="tab-btn" data-tab="weekly">周报</button>
+        </nav>
+
+        <main class="main-content">
+            <!-- 记录 Tab -->
+            <section id="tab-record" class="tab-panel active">
+                <div class="card">
+                    <h2>添加学习记录</h2>
+                    <form id="record-form">
+                        <div class="form-group">
+                            <label for="topic-input">学习主题</label>
+                            <div class="topic-input-row">
+                                <input type="text" id="topic-input" placeholder="例如：深度学习基础、论文阅读" required autocomplete="off">
+                                <button type="button" id="topic-select-btn" class="btn-secondary" title="选择已有主题">选择</button>
+                            </div>
+                            <div id="topic-dropdown" class="topic-dropdown hidden"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="progress-input">进展</label>
+                            <textarea id="progress-input" rows="3" placeholder="今天学到了什么？完成了哪些内容？"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="difficulty-input">困难</label>
+                            <textarea id="difficulty-input" rows="2" placeholder="遇到了什么问题？哪些地方还不理解？"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="nextstep-input">下一步</label>
+                            <textarea id="nextstep-input" rows="2" placeholder="接下来计划做什么？"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notes-input">备注</label>
+                            <input type="text" id="notes-input" placeholder="参考资料、代码链接等">
+                        </div>
+                        <button type="submit" class="btn-primary" id="submit-btn">保存记录</button>
+                    </form>
+                    <div id="form-message" class="form-message hidden"></div>
+                </div>
+
+                <div class="card sample-card">
+                    <h3>样例数据</h3>
+                    <p class="sample-note">以下为本应用预置的样例主题，用于演示功能。真实数据请通过上方表单添加。</p>
+                    <div class="sample-topics">
+                        <button class="btn-sample" data-topic="深度学习基础">深度学习基础</button>
+                        <button class="btn-sample" data-topic="论文阅读 - Transformer">论文阅读 - Transformer</button>
+                    </div>
+                    <button id="seed-btn" class="btn-secondary">加载样例数据到 PowerContext</button>
+                    <div id="seed-message" class="form-message hidden"></div>
+                </div>
+            </section>
+
+            <!-- 时间线 Tab -->
+            <section id="tab-timeline" class="tab-panel">
+                <div class="card">
+                    <div class="timeline-header">
+                        <h2>历史时间线</h2>
+                        <select id="timeline-topic-select" class="select-input">
+                            <option value="">全部主题</option>
+                        </select>
+                    </div>
+                    <div id="timeline-container" class="timeline">
+                        <div class="loading-state">加载中...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 继续学习建议 Tab -->
+            <section id="tab-suggest" class="tab-panel">
+                <div class="card">
+                    <div class="suggest-header">
+                        <h2>继续学习建议</h2>
+                        <select id="suggest-topic-select" class="select-input">
+                            <option value="">请选择主题</option>
+                        </select>
+                        <button id="suggest-refresh-btn" class="btn-icon" title="刷新建议">↻</button>
+                    </div>
+                    <div id="suggest-container">
+                        <div class="empty-state">请选择一个主题查看建议</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 周报 Tab -->
+            <section id="tab-weekly" class="tab-panel">
+                <div class="card">
+                    <div class="weekly-header">
+                        <h2>周报预览</h2>
+                        <div class="weekly-controls">
+                            <select id="weekly-topic-select" class="select-input">
+                                <option value="">全部主题</option>
+                            </select>
+                            <select id="weekly-days-select" class="select-input">
+                                <option value="7">最近 7 天</option>
+                                <option value="14">最近 14 天</option>
+                                <option value="30">最近 30 天</option>
+                            </select>
+                            <button id="weekly-generate-btn" class="btn-primary">生成周报</button>
+                            <button id="weekly-download-btn" class="btn-secondary" disabled>下载 Markdown</button>
+                        </div>
+                    </div>
+                    <div id="weekly-container">
+                        <div class="empty-state">点击「生成周报」查看本周学习总结</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <p>研途 StudyFlow — 基于 <a href="https://github.com/oceanbase/powercontext" target="_blank" rel="noopener">OceanBase PowerContext</a> 构建</p>
+            <p class="footer-note">数据存储于本地 PowerContext 运行时（SQLite），周报与建议由确定性规则生成，未使用 LLM</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

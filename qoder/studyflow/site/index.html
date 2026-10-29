@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研途 StudyFlow — 学习科研进度助手 | OceanBase PowerContext</title>
+    <meta name="description" content="基于 OceanBase PowerContext 的学习科研进度管理工具，支持记录、时间线、建议和周报生成。">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container header-inner">
+            <div class="header-left">
+                <span class="logo-icon"></span>
+                <span class="logo-text">研途 StudyFlow</span>
+            </div>
+            <nav class="header-nav">
+                <a href="#features">功能</a>
+                <a href="#demo">在线演示</a>
+                <a href="#architecture">架构</a>
+                <a href="#tests">验证</a>
+                <a href="https://github.com/Alan-195608/PowerContext/tree/codex/qoder-studyflow/qoder/studyflow" target="_blank" rel="noopener">源码与运行说明</a>
+            </nav>
+            <button id="theme-toggle" class="btn-theme" aria-label="切换主题">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">OceanBase 2026 大赛参赛作品</div>
+            <h1>研途 StudyFlow</h1>
+            <p class="hero-subtitle">基于 PowerContext 的学习科研进度助手</p>
+            <p class="hero-desc">记录学习进展、追踪困难与计划、生成确定性周报。所有数据通过 OceanBase PowerContext SDK 持久化存储，每个学习主题对应独立 Scope，实现严格的主题隔离。</p>
+            <div class="hero-badges">
+                <span class="badge">PowerContext 真实 SDK</span>
+                <span class="badge">Scope 隔离</span>
+                <span class="badge">确定性周报</span>
+                <span class="badge">中文界面</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="section">
+        <div class="container">
+            <h2 class="section-title">核心功能</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📝</div>
+                    <h3>学习记录</h3>
+                    <p>记录每个主题的进展、困难、下一步计划和备注。数据以 JSON 格式存储在 PowerContext Memory Entry 中，包含稳定 marker 标识。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📅</div>
+                    <h3>时间线</h3>
+                    <p>按时间倒序展示学习记录，支持按主题筛选。每条记录显示 memory_id 和真实创建时间，便于溯源。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💡</div>
+                    <h3>智能建议</h3>
+                    <p>基于确定性规则从真实存储生成学习建议：继续上次计划、回顾困难、复习近期进展。不依赖 LLM。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>周报生成</h3>
+                    <p>自动汇总指定周期内的学习记录，生成 Markdown 格式周报，包含完整 memory_id 引用来源。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>主题隔离</h3>
+                    <p>每个学习主题对应独立的 PowerContext Scope，通过 idempotency_key 保证幂等创建，数据严格隔离。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>持久化存储</h3>
+                    <p>基于 SQLite 后端的 PowerContext 内置运行时，重启后数据完整保留，字段和时间不变。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">在线演示</h2>
+            <p class="section-desc">以下为客户端模拟演示（使用 localStorage），完整功能需运行本地服务端（使用真实 PowerContext SDK）。</p>
+            <div class="demo-app">
+                <nav class="demo-tabs">
+                    <button class="demo-tab active" data-panel="demo-record">记录</button>
+                    <button class="demo-tab" data-panel="demo-timeline">时间线</button>
+                    <button class="demo-tab" data-panel="demo-weekly">周报</button>
+                </nav>
+
+                <div id="demo-record" class="demo-panel active">
+                    <div class="demo-form">
+                        <div class="form-row">
+                            <label>学习主题</label>
+                            <input type="text" id="demo-topic" placeholder="例如：深度学习基础" list="demo-topic-list">
+                            <datalist id="demo-topic-list"></datalist>
+                        </div>
+                        <div class="form-row">
+                            <label>进展</label>
+                            <textarea id="demo-progress" rows="2" placeholder="今天学到了什么？"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label>困难</label>
+                            <textarea id="demo-difficulty" rows="2" placeholder="遇到了什么问题？"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label>下一步</label>
+                            <textarea id="demo-next" rows="2" placeholder="接下来计划做什么？"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <label>备注</label>
+                            <input type="text" id="demo-notes" placeholder="参考资料等">
+                        </div>
+                        <button id="demo-save-btn" class="btn-primary">保存记录</button>
+                        <div id="demo-msg" class="demo-msg"></div>
+                    </div>
+                    <div class="demo-sample">
+                        <h4>样例数据（虚构）</h4>
+                        <p class="sample-note">以下为主题示例，数据为虚构的学习记录，非实测结果。</p>
+                        <button class="btn-secondary demo-seed-btn" data-topic="深度学习基础">深度学习基础</button>
+                        <button class="btn-secondary demo-seed-btn" data-topic="论文阅读 - Transformer">论文阅读 - Transformer</button>
+                        <button id="demo-seed-all" class="btn-secondary">加载全部样例</button>
+                    </div>
+                </div>
+
+                <div id="demo-timeline" class="demo-panel">
+                    <div class="demo-filter">
+                        <select id="demo-filter-topic">
+                            <option value="">全部主题</option>
+                        </select>
+                    </div>
+                    <div id="demo-timeline-list" class="demo-timeline"></div>
+                </div>
+
+                <div id="demo-weekly" class="demo-panel">
+                    <div class="demo-filter">
+                        <select id="demo-weekly-topic">
+                            <option value="">全部主题</option>
+                        </select>
+                        <button id="demo-gen-weekly" class="btn-primary">生成周报</button>
+                    </div>
+                    <pre id="demo-weekly-output" class="demo-weekly-output">点击「生成周报」查看学习总结</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="architecture" class="section">
+        <div class="container">
+            <h2 class="section-title">技术架构</h2>
+            <div class="arch-diagram">
+                <div class="arch-layer arch-frontend">
+                    <h4>前端 (Browser)</h4>
+                    <div class="arch-boxes">
+                        <div class="arch-box">index.html</div>
+                        <div class="arch-box">app.js</div>
+                        <div class="arch-box">styles.css</div>
+                    </div>
+                </div>
+                <div class="arch-arrow">HTTP (fetch)</div>
+                <div class="arch-layer arch-backend">
+                    <h4>服务端 (Python)</h4>
+                    <div class="arch-boxes">
+                        <div class="arch-box">http.server</div>
+                        <div class="arch-box">server.py</div>
+                        <div class="arch-box">asyncio + threading</div>
+                    </div>
+                </div>
+                <div class="arch-arrow">PowerContext SDK</div>
+                <div class="arch-layer arch-storage">
+                    <h4>存储层 (PowerContext)</h4>
+                    <div class="arch-boxes">
+                        <div class="arch-box">BuiltinRuntime</div>
+                        <div class="arch-box">Scope (主题隔离)</div>
+                        <div class="arch-box">Memory Entry (JSON)</div>
+                        <div class="arch-box">SQLite 后端</div>
+                    </div>
+                </div>
+            </div>
+            <div class="arch-details">
+                <div class="arch-detail-card">
+                    <h4>Scope 隔离</h4>
+                    <p>每个学习主题创建一个 PowerContext Scope，使用 <code>idempotency_key</code> 保证幂等。Scope 之间数据完全隔离，召回时只读取对应 Scope 的 Memory Entry。</p>
+                </div>
+                <div class="arch-detail-card">
+                    <h4>Memory Entry 结构</h4>
+                    <p>每条记录存储为 JSON 格式的 Memory Entry text 字段，包含 <code>marker: "studyflow:record"</code> 标识、<code>created_at</code> 真实时间戳、进展/困难/计划/备注四个字段。</p>
+                </div>
+                <div class="arch-detail-card">
+                    <h4>确定性生成</h4>
+                    <p>建议和周报完全由确定性规则从真实存储数据生成，不调用任何 LLM 服务。周报 Markdown 中包含完整 memory_id 引用，可溯源到每条原始记录。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tests" class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">验证结果</h2>
+            <p class="section-desc">55 项自动化 HTTP 端点测试全部通过，覆盖以下场景：</p>
+            <div class="test-grid">
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">GET /api/topics 返回 200</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">POST /api/record 缺少主题返回 400</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">POST /api/record 空内容返回 400</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">POST /api/record 有效数据返回 200 + created_at</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">多主题创建与列表</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">GET /api/recall 按主题召回</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">主题隔离：B 主题不含 A 的记录</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">周报 Markdown 含 memory_id 引用</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">路径遍历 /static/../server.py 返回 404</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">非法 JSON 返回 400</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">多行文本完整保存与召回</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">重启后数据持久化，created_at 不变</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">确定性建议生成</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">静态文件正确服务 (CSS/JS)</span>
+                </div>
+                <div class="test-card test-pass">
+                    <span class="test-status">PASS</span>
+                    <span class="test-name">SIGTERM 正常停止</span>
+                </div>
+            </div>
+            <div class="test-summary">
+                <span class="test-count">55/55</span>
+                <span class="test-label">测试通过</span>
+            </div>
+        </div>
+    </section>
+
+    <section id="run" class="section">
+        <div class="container">
+            <h2 class="section-title">运行说明</h2>
+            <div class="run-steps">
+                <div class="run-step">
+                    <span class="step-num">1</span>
+                    <div class="step-content">
+                        <h4>环境准备</h4>
+                        <p>需要 Python 3.11+ 和 PowerContext SDK。</p>
+                        <pre class="code-block">cd qoder/studyflow
+bash start.sh</pre>
+                    </div>
+                </div>
+                <div class="run-step">
+                    <span class="step-num">2</span>
+                    <div class="step-content">
+                        <h4>访问服务</h4>
+                        <p>打开浏览器访问 <code>http://127.0.0.1:8765</code></p>
+                    </div>
+                </div>
+                <div class="run-step">
+                    <span class="step-num">3</span>
+                    <div class="step-content">
+                        <h4>运行验证</h4>
+                        <pre class="code-block">.venv/bin/python test_http.py</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>研途 StudyFlow — 基于 <a href="https://github.com/oceanbase/powercontext" target="_blank" rel="noopener">OceanBase PowerContext</a> 构建</p>
+            <p class="footer-note">数据存储于本地 PowerContext 运行时（SQLite 后端），周报与建议由确定性规则生成，未使用 LLM</p>
+            <p class="footer-note">样例数据为虚构的学习记录，示例中的 98.5% 等数据为非作品实测结果</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

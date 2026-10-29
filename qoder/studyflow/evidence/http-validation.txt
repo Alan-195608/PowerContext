@@ -1,0 +1,109 @@
+============================================================
+StudyFlow HTTP Endpoint Tests
+============================================================
+
+Temp data dir: /var/folders/_h/n35mnf9902j8yv8wj7lt8mfc0000gn/T/studyflow-test-p1xw8zkp/data
+
+--- Starting server (first run) ---
+Server started
+
+--- Test: GET /api/topics (empty) ---
+  PASS: status 200
+  PASS: ok=True
+  PASS: topics is list
+
+--- Test: POST /api/record missing topic ---
+  PASS: status 400
+  PASS: error message
+
+--- Test: POST /api/record empty content ---
+  PASS: status 400
+  PASS: error message
+
+--- Test: POST /api/record valid ---
+  PASS: status 200
+  PASS: ok=True
+  PASS: has created_at
+  PASS: created_at is ISO format
+  created_at = 2026-10-30T00:46:43.376159
+
+--- Test: POST second record same topic ---
+  PASS: status 200
+
+--- Test: POST record to different topic ---
+  PASS: status 200
+
+--- Test: GET /api/topics (2 topics) ---
+  PASS: status 200
+  PASS: 2 topics
+  PASS: contains 测试主题A
+  PASS: contains 测试主题B
+
+--- Test: GET /api/recall topic A ---
+  PASS: status 200
+  PASS: ok=True
+  PASS: 2 records for topic A
+  PASS: records have memory_id
+  PASS: records have created_at
+  PASS: records sorted desc
+
+--- Test: Topic isolation ---
+  PASS: status 200
+  PASS: 1 record for topic B
+  PASS: topic B correct content
+
+--- Test: GET /api/recall missing topic ---
+  PASS: status 400
+
+--- Test: GET /api/weekly ---
+  PASS: status 200
+  PASS: has markdown
+  PASS: has record_count
+  PASS: has citations
+  PASS: markdown has header
+  PASS: markdown has citations section
+  PASS: markdown has memory_id citations
+  PASS: record_count is 3
+
+--- Test: GET /api/weekly filtered ---
+  PASS: status 200
+  PASS: record_count is 2
+
+--- Test: Path traversal protection ---
+  PASS: status 404 for traversal
+
+--- Test: Invalid JSON body ---
+  PASS: status 400 for invalid JSON
+
+--- Test: Static files ---
+  PASS: styles.css 200
+  PASS: content-type is css
+  PASS: app.js 200
+
+--- Test: Multiline text ---
+  PASS: store multiline 200
+  PASS: recall multiline 200
+  PASS: multiline preserved
+
+--- Test: Deterministic suggestions ---
+  PASS: status 200
+  PASS: has suggestions
+  PASS: has summary
+
+--- Test: 404 for unknown API ---
+  PASS: status 404
+
+--- Stopping server (first run) ---
+Server stopped
+
+--- Test: Persistence after restart ---
+  PASS: status 200 after restart
+  PASS: topics persist after restart
+  PASS: 测试主题A persists
+  PASS: recall works after restart
+  PASS: records persist after restart
+  PASS: created_at preserved after restart
+
+============================================================
+Results: 55/55 passed, 0 failed
+============================================================
