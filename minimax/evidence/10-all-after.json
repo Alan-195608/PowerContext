@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-29T16:41:14.417366+00:00",
+  "command": [
+    "/Users/xuwencai/Documents/ChatGPT/Oceanbase大赛/powercontext-minimax/minimax/.venv/bin/python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tests",
+    "-v"
+  ],
+  "cwd": "/Users/xuwencai/Documents/ChatGPT/Oceanbase大赛/powercontext-minimax/minimax/.runs/live-02/project",
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "test_empty_valid (test_orders.RegressionTests.test_empty_valid) ... ok\ntest_no_filter_preserves_everything (test_orders.RegressionTests.test_no_filter_preserves_everything) ... ok\ntest_shallow_copies (test_orders.RegressionTests.test_shallow_copies) ... ok\ntest_each_status (test_orders.TargetTests.test_each_status) ... ok\ntest_empty_still_validates (test_orders.TargetTests.test_empty_still_validates) ... ok\ntest_filter_returns_copies (test_orders.TargetTests.test_filter_returns_copies) ... ok\ntest_invalid_status (test_orders.TargetTests.test_invalid_status) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.000s\n\nOK\n",
+  "source_sha256": "4f74c9798a1ba810b3c1afa6ac69b61cf43b5f969514fb3203d134122a0180e9",
+  "tests_sha256": "35da8af960b8567a2dd207098a1384693dec3335d20bfc6fccdb98c89c8aed2d"
+}

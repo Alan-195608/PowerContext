@@ -1,0 +1,5 @@
+{
+  "completed": ["已确认 ORD-001 与 ORD-002 适用"],
+  "todo": ["复查订单 status 筛选的测试证据"],
+  "verification": [{"note": "输入样例；真实运行结果由 verify.py 生成"}]
+}

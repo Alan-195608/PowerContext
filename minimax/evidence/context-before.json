@@ -1,0 +1,81 @@
+{
+  "task": {
+    "id": "orders-status-filter",
+    "description": "为 list_orders 增加 status 筛选，并按 ORD-001 校验输入；保持 ORD-002 所有兼容行为。",
+    "query": "orders status list_orders ORD-001 ORD-002",
+    "required_sources": [
+      "specs/orders.md",
+      "orders.py",
+      "tests/test_orders.py"
+    ],
+    "target": "orders.py",
+    "tests": "tests/test_orders.py"
+  },
+  "specifications": [
+    {
+      "path": "specs/orders.md",
+      "kind": "spec",
+      "sha256": "e0eef00e51cc32b088b96cb187b7ce4be1c61a562fbd506fdf2719699f875e71",
+      "content": "# 订单列表规格 v1\n\n## ORD-001 status 筛选\nlist_orders(orders, status=None) 在 status=None 时返回所有订单。\nstatus 为 pending、paid、cancelled 之一时，只返回状态相等的订单。\n空字符串、其他字符串和非字符串非 None 值抛出 ValueError；错误文本包含 status。\n\n## ORD-002 兼容性\n筛选和不筛选都必须保留输入顺序、返回新的列表和浅拷贝的字典，不修改调用方数据。\n空订单列表仍校验 status；有效筛选作用于空列表时返回 []。\n订单中缺少 status 的记录在不筛选时保留，在有效 status 筛选时排除。\n",
+      "lines": [
+        1,
+        11
+      ]
+    }
+  ],
+  "code": [
+    {
+      "path": "orders.py",
+      "kind": "code",
+      "sha256": "c42676ef71be27489041c435ab336f804b2746813ef0a708225f94756458c1cd",
+      "content": "\"\"\"Small order listing service; input order and caller data are preserved.\"\"\"\n\n\ndef list_orders(orders, status=None):\n    \"\"\"Return independent order dictionaries in their original order.\"\"\"\n    return [dict(order) for order in orders]\n",
+      "lines": [
+        1,
+        6
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "path": "tests/test_orders.py",
+      "kind": "test",
+      "sha256": "35da8af960b8567a2dd207098a1384693dec3335d20bfc6fccdb98c89c8aed2d",
+      "content": "import unittest\n\nfrom orders import list_orders\n\n\nclass TargetTests(unittest.TestCase):\n    def setUp(self):\n        self.orders = [\n            {\"id\": 1, \"status\": \"pending\"},\n            {\"id\": 2, \"status\": \"paid\"},\n            {\"id\": 3, \"status\": \"cancelled\"},\n            {\"id\": 4, \"status\": \"paid\"},\n            {\"id\": 5},\n        ]\n\n    def test_each_status(self):\n        for status, ids in [(\"pending\", [1]), (\"paid\", [2, 4]), (\"cancelled\", [3])]:\n            with self.subTest(status=status):\n                self.assertEqual([o[\"id\"] for o in list_orders(self.orders, status)], ids)\n\n    def test_invalid_status(self):\n        for status in [\"\", \"unknown\", \"PAID\", 0, False, [], {}]:\n            with self.subTest(status=status):\n                with self.assertRaisesRegex(ValueError, \"status\"):\n                    list_orders(self.orders, status)\n\n    def test_empty_still_validates(self):\n        with self.assertRaisesRegex(ValueError, \"status\"):\n            list_orders([], \"unknown\")\n\n    def test_filter_returns_copies(self):\n        result = list_orders(self.orders, \"paid\")\n        self.assertEqual([o[\"id\"] for o in result], [2, 4])\n        result[0][\"id\"] = 99\n        self.assertEqual(self.orders[1][\"id\"], 2)\n\n\nclass RegressionTests(unittest.TestCase):\n    def test_no_filter_preserves_everything(self):\n        orders = [{\"id\": 2}, {\"id\": 1, \"status\": \"paid\"}]\n        self.assertEqual(list_orders(orders), orders)\n        self.assertEqual(list_orders(orders, None), orders)\n\n    def test_shallow_copies(self):\n        orders = [{\"id\": 1, \"status\": \"paid\"}]\n        result = list_orders(orders)\n        self.assertIsNot(result, orders)\n        self.assertIsNot(result[0], orders[0])\n        result[0][\"id\"] = 9\n        self.assertEqual(orders[0][\"id\"], 1)\n\n    def test_empty_valid(self):\n        self.assertEqual(list_orders([]), [])\n        self.assertEqual(list_orders([], \"paid\"), [])\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n",
+      "lines": [
+        1,
+        58
+      ]
+    }
+  ],
+  "progress": {
+    "completed": [
+      "Imported real project documents; baseline target tests fail as expected"
+    ],
+    "todo": [
+      "为 list_orders 增加 status 筛选，并按 ORD-001 校验输入；保持 ORD-002 所有兼容行为。",
+      "Run target and regression tests"
+    ],
+    "verification": [
+      {
+        "phase": "before",
+        "regression_exit": 0,
+        "source_sha256": "c42676ef71be27489041c435ab336f804b2746813ef0a708225f94756458c1cd",
+        "target_exit": 1
+      }
+    ]
+  },
+  "powercontext_address": {
+    "scope_id": "scp_6sypeps77prcrq332jq1mrvs3m",
+    "citation": {
+      "memory_ref": {
+        "family": "memory",
+        "artifact_id": "memory",
+        "revision": 1
+      },
+      "entry_id": "mem_ent_dcfe9406e801413fb1656c6bd1c1699b",
+      "entry_version_id": "mem_ver_92539d1ad0bb43249fde1695f405dc7a"
+    }
+  },
+  "next_action": "为 list_orders 增加 status 筛选，并按 ORD-001 校验输入；保持 ORD-002 所有兼容行为。",
+  "snapshot_hash": "760b235c0f9b86d7d727b32bd36700804ea6324ffe2848006de74dc9c72b6925"
+}

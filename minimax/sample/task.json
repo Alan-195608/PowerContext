@@ -1,0 +1,8 @@
+{
+  "id": "orders-status-filter",
+  "description": "为 list_orders 增加 status 筛选，并按 ORD-001 校验输入；保持 ORD-002 所有兼容行为。",
+  "query": "orders status list_orders ORD-001 ORD-002",
+  "required_sources": ["specs/orders.md", "orders.py", "tests/test_orders.py"],
+  "target": "orders.py",
+  "tests": "tests/test_orders.py"
+}

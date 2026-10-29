@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-29T16:45:03.066630+00:00",
+  "mode": "recorded",
+  "passed": true,
+  "checks": {
+    "runnable": true,
+    "minimax_provenance": true,
+    "context_and_spec_update": true,
+    "real_seekdb": true,
+    "powercontext_restart_reuse": true,
+    "effective_change": true
+  },
+  "before_source_sha256": "c42676ef71be27489041c435ab336f804b2746813ef0a708225f94756458c1cd",
+  "after_source_sha256": "4f74c9798a1ba810b3c1afa6ac69b61cf43b5f969514fb3203d134122a0180e9",
+  "unchanged_tests_sha256": "35da8af960b8567a2dd207098a1384693dec3335d20bfc6fccdb98c89c8aed2d",
+  "save_pid": 27998,
+  "resume_pid": 27999
+}

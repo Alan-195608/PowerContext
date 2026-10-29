@@ -1,0 +1,22 @@
+{
+  "time": "2026-10-29T16:45:29.850912+00:00",
+  "command": [
+    "python",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "exit_code": 0,
+  "stdout": "....                                                                     [100%]\n4 passed in 11.92s\n",
+  "stderr": "",
+  "sources": {
+    "sdd/store.py": "7f793d955e6c2aea1b6175ed913dee620603c02af82eb8d5533b3f049e49020d",
+    "sdd/__init__.py": "272855ec448619d9c743bb2a715bafde863eed5132dc2a71fe264e3f0c96123d",
+    "sdd/model.py": "9facaf84bb7c74b9a40a300f25fae16cdfbc96e02db4302254544e3cbda64b25",
+    "sdd/context.py": "18bc35bd337515945971d0e18854ec46b645763c1f105b3f85bc69dee57b8e86",
+    "sdd/common.py": "b26a9b96daa28c930d193957ef33c6acd5c0cb159c1a44cddb5302b861bb0576",
+    "sdd/__main__.py": "27b4a10cc20c3a073b30855a1c3dfed3d77b94ae75e1d383a422c207e1f13ec6",
+    "sdd/state.py": "615a94fe11087ed2e74538989b0c7713c22fee75f51ebee5bfa9470c72520710",
+    "tests/test_context.py": "ad1e57632d972f74e19a3a1a7f89a0794b80d0de01bd5249aadd37ecf50769f5"
+  }
+}

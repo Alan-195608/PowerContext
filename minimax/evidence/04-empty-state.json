@@ -1,0 +1,19 @@
+{
+  "time": "2026-10-29T16:40:56.026739+00:00",
+  "command": [
+    "/Users/xuwencai/Documents/ChatGPT/Oceanbase大赛/powercontext-minimax/minimax/.venv/bin/python3",
+    "-m",
+    "sdd",
+    "--run-dir",
+    "/Users/xuwencai/Documents/ChatGPT/Oceanbase大赛/powercontext-minimax/minimax/.runs/live-02/data",
+    "resume",
+    "--task-id",
+    "orders-status-filter"
+  ],
+  "cwd": "/Users/xuwencai/Documents/ChatGPT/Oceanbase大赛/powercontext-minimax/minimax",
+  "exit_code": 0,
+  "stdout": "{\n  \"value\": null,\n  \"pid\": 24763,\n  \"address\": null\n}\n",
+  "stderr": "",
+  "source_sha256": "c42676ef71be27489041c435ab336f804b2746813ef0a708225f94756458c1cd",
+  "tests_sha256": "35da8af960b8567a2dd207098a1384693dec3335d20bfc6fccdb98c89c8aed2d"
+}
