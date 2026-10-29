@@ -6,6 +6,7 @@ import json
 import math
 import re
 import sqlite3
+from bisect import bisect_left, bisect_right
 from collections import Counter
 from contextlib import closing
 from dataclasses import replace
@@ -68,7 +69,20 @@ _STOP = frozenset([
 
 
 def _tokens(text):
-    words = [word for word in re.findall(r"\w+", text.casefold()) if word not in _STOP]
+    folded = text.casefold().translate(
+        str.maketrans({
+            "α": "alpha",  # noqa: RUF001 - scientific Greek letter normalization
+            "β": "beta",
+            "γ": "gamma",  # noqa: RUF001 - scientific Greek letter normalization
+            "δ": "delta",
+            "κ": "kappa",
+            "μ": "mu",
+        })
+    )
+    compounds = re.findall(r"\b[a-z0-9]+(?:[-‐‑–][a-z0-9]+)+\b", folded)  # noqa: RUF001 - normalize hyphens
+    compounds += re.findall(r"\b[a-z]{1,8}\s+[0-9]+[a-z]*\b", folded)
+    extra = [re.sub(r"[^a-z0-9]", "", value) for value in compounds]
+    words = [word for word in [*re.findall(r"\w+", folded), *extra] if word not in _STOP]
     if not words:
         return []
     with closing(sqlite3.connect(":memory:")) as database:
@@ -101,23 +115,104 @@ def _render(fragments):
     )
 
 
+def _fit_query_fragment(fragment, original, query, budget):  # noqa: C901 - two monotone byte fits and literal scoring
+    """Fit an oversized sentence around matching concepts, not its first matching word."""
+    if len(_render([fragment]).encode()) <= budget:
+        return fragment
+    words = list(re.finditer(r"\w+", fragment.text))
+    analyzed = {}
+    occurrences = []
+    frequencies = Counter()
+    for word in words:
+        value = word.group().casefold()
+        if value not in analyzed:
+            analyzed[value] = set(_tokens(value)) & query.keys()
+        matches = analyzed[value]
+        if matches:
+            occurrences.append((fragment.start + word.start(), fragment.start + word.end(), matches))
+            frequencies.update(matches)
+    if not occurrences:
+        return None
+    weights = {term: query[term] * math.log1p(len(words) / count) for term, count in frequencies.items()}
+    # Rare matching concepts seed the bounded search before repeated generic words.
+    anchors = sorted(occurrences, key=lambda item: -sum(weights[t] for t in item[2]))[:128]
+    starts = [fragment.start + word.start() for word in words]
+    ends = [fragment.start + word.end() for word in words]
+    attempts = set()
+    fitting = []
+    for left, right, _ in anchors:
+        desired = max(fragment.start, left - 120)
+        start = starts[bisect_left(starts, desired)]
+        end = min(fragment.end, right + 120)
+        for forward in (True, False):
+            fixed = start if forward else end
+            key = (forward, fixed)
+            if key in attempts:
+                continue
+            attempts.add(key)
+            low, high = (start + 1, fragment.end) if forward else (fragment.start, end - 1)
+            best = None
+            while low <= high:
+                middle = (low + high) // 2
+                a, b = (start, middle) if forward else (middle, end)
+                candidate = replace(fragment, start=a, end=b, text=original[a:b])
+                if len(_render([candidate]).encode()) <= budget:
+                    best = candidate
+                    if forward:
+                        low = middle + 1
+                    else:
+                        high = middle - 1
+                elif forward:
+                    high = middle - 1
+                else:
+                    low = middle + 1
+            if best is None:
+                continue
+            start_index = bisect_left(starts, best.start)
+            if start_index == len(starts):
+                continue
+            a = starts[start_index]
+            boundary = bisect_right(ends, best.end) - 1
+            if boundary < 0 or a >= ends[boundary]:
+                continue
+            b = ends[boundary]
+            candidate = replace(fragment, start=a, end=b, text=original[a:b])
+            matched = set().union(*(terms for x, y, terms in occurrences if a <= x and y <= b))
+            utility = sum(weights[t] for t in matched)
+            # Equal concept coverage should keep the focused window: padding a
+            # long sentence with boilerplate must not dilute its ranking later.
+            fitting.append((utility, len(matched), a - b, -a, candidate))
+    return max(fitting, key=lambda value: value[:4])[-1] if fitting else None
+
+
 def select_evidence(request, groups):  # noqa: C901 - bounded literal selection and packing
     query = Counter(_tokens(request.query))
     identifiers = re.findall(r"\b(?:[A-Z]{2,}[0-9]*|[a-zA-Z]+[0-9]+[a-zA-Z0-9]*)\b", request.query)
     for term in _tokens(" ".join(identifiers)):
         query[term] = max(query[term], 3)
     candidates = []
+    document_tokens = {}
     for group in groups:
         for hit in group.hits:
             address = MemoryEntryAddress(
                 ArtifactAddress(scope_id=group.scope_id, artifact=hit.memory_ref), hit.entry_id, hit.entry_version_id
             )
-            for match in re.finditer(r"\S[\s\S]*?(?:[.!?](?=\s|$)|\n|$)", hit.text):
+            key = (address.memory.model_dump_json(), address.entry_id, address.entry_version_id)
+            document_tokens[key] = Counter(_tokens(hit.text))
+            for match in re.finditer(r"\S[\s\S]*?(?:[.!?](?=\s|$)|$)", hit.text):
                 start, end = match.span()
                 if start < end:
-                    candidates.append((
+                    fragment = _fit_query_fragment(
                         PreparedEvidenceFragment(address, start, end, hit.text[start:end]),
-                        Counter(_tokens(hit.text[start:end])),
+                        hit.text,
+                        query,
+                        request.max_bytes,
+                    )
+                    if fragment is None:
+                        continue
+                    candidates.append((
+                        fragment,
+                        Counter(_tokens(fragment.text)),
                         hit.text,
                     ))
     frequency = Counter(token for _, tokens, _ in candidates for token in tokens)
@@ -125,9 +220,6 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
     def identity(fragment):
         return (fragment.address.memory.model_dump_json(), fragment.address.entry_id, fragment.address.entry_version_id)
 
-    document_tokens = {}
-    for fragment, tokens, _ in candidates:
-        document_tokens.setdefault(identity(fragment), Counter()).update(tokens)
     document_frequency = Counter(t for tokens in document_tokens.values() for t in tokens)
     average_length = sum(sum(tokens.values()) for tokens in document_tokens.values()) / max(1, len(document_tokens))
     document_scores = {
@@ -153,7 +245,10 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
         score = sum(math.log(1 + len(candidates) / (1 + frequency[t])) * query[t] for t in matches)
         score *= 1 + len(matches) / max(1, len(query))
         score *= (document_scores[identity(fragment)] / maximum) ** 1.0
-        score /= max(1, sum(tokens.values())) ** 0.35
+        # Length is accounted for once, when the contiguous windows are ranked
+        # below. Dividing the sentence score as well would charge a long
+        # sentence twice and let a short title match that repeats two query
+        # words outrank the complete evidence sentence later in the document.
         lower = fragment.text.lower()
         if re.search(r"\b(results?|conclusions?|found|showed|demonstrat|indicat|suggest)", lower):
             score *= 1.5
@@ -201,6 +296,15 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
         )
         for other in neighbors:
             start, end = min(fragment.start, other.start), max(fragment.end, other.end)
+            # Merging across a neighbour must not re-deliver bytes another
+            # selected fragment already covers: the overlap would be paid for
+            # twice while contributing no new evidence.
+            if any(
+                f.address == fragment.address and f.start < end and start < f.end
+                for position, f in enumerate(selected)
+                if position != index
+            ):
+                continue
             trial = list(selected)
             trial[index] = replace(fragment, start=start, end=end, text=original[start:end])
             if len(_render(trial).encode()) <= request.max_bytes:
@@ -219,26 +323,21 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
                     else:
                         high = length - 1
                 break
-    if not selected and candidates and max(scores, default=0) > 0:
-        best = max(range(len(scores)), key=scores.__getitem__)
-        fragment, _, _ = candidates[best]
-        # A sentence can itself exceed the wire budget. Center a literal window
-        # on a matching word instead of dropping all evidence or clipping its tail.
-        anchor = next(
-            (m.start() for m in re.finditer(r"\w+", fragment.text) if set(_tokens(m.group())) & query.keys()), 0
-        )
-        start = fragment.start + max(0, anchor - 80)
-        low, high = 1, fragment.end - start
-        original = candidates[best][2]
-        while low <= high:
-            length = (low + high) // 2
-            shortened = replace(fragment, start=start, end=start + length, text=original[start : start + length])
-            if len(_render([shortened]).encode()) <= request.max_bytes:
-                selected, low = [shortened], length + 1
-            else:
-                high = length - 1
     if not selected:
         return PreparedContextBuild(PreparedContext(status="empty", content=None, content_bytes=0), ())
+    # Adjacent fragments of one entry can still touch or overlap after the
+    # expansion above. Deliver each covered range once so the budget is not
+    # spent on the same characters twice.
+    merged = []
+    for fragment in sorted(selected, key=lambda f: (identity(f), f.start)):
+        previous = merged[-1] if merged else None
+        if previous is not None and previous.address == fragment.address and fragment.start <= previous.end:
+            end = max(previous.end, fragment.end)
+            original = originals[identity(fragment)]
+            merged[-1] = replace(previous, end=end, text=original[previous.start : end])
+            continue
+        merged.append(fragment)
+    selected = merged
     content = _render(selected)
     return PreparedContextBuild(
         PreparedContext(status="ready", content=content, content_bytes=len(content.encode())),

@@ -152,3 +152,71 @@ def test_query_word_forms_find_late_literal_evidence():
             assert result.context.content_bytes == len(result.context.content.encode()) <= 1200
 
     asyncio.run(check())
+
+
+def test_oversized_sentence_keeps_late_evidence_despite_an_early_common_query_word():
+    async def check():
+        for with_distractor in (False, True):
+            async with open_builtin_runtime(BuiltinConfig()) as runtime:
+                assert runtime.scopes is not None
+                scope = await runtime.scopes.create(
+                    ScopeDraft(
+                        title="Long literal evidence",
+                        summary="Late evidence in one sentence",
+                        idempotency_key="long-evidence",
+                    )
+                )
+                memory = runtime.memory.for_scope(scope.scope_id)
+                text = "sensor records " + "routine " * 350 + "cobalt sensor calibrated at 37 degrees"
+                entries = [MemoryEntryInput(kind="document", text=text)]
+                if with_distractor:
+                    entries.append(
+                        MemoryEntryInput(kind="document", text="The sensor was calibrated for an old experiment.")
+                    )
+                await memory.remember(RememberMemoryRequest(entries=tuple(entries)))
+                page = await memory.search(SearchMemoryRequest(query="cobalt sensor calibrated", mode="fts", limit=10))
+                result = PreparedContextBuilder().build_scopes_result(
+                    request=PrepareContextRequest(
+                        query="cobalt sensor calibrated", max_bytes=1200, evidence_selection=True
+                    ),
+                    current_scope_id=scope.scope_id,
+                    memory_candidates=(
+                        PreparedMemoryCandidates(scope_id=scope.scope_id, memory_ref=page.memory_ref, hits=page.hits),
+                    ),
+                )
+                assert any("cobalt sensor calibrated at 37 degrees" in f.text for f in result.fragments), (
+                    with_distractor,
+                    [f.text[-120:] for f in result.fragments],
+                )
+                assert result.context.content is not None
+                assert result.context.content_bytes == len(result.context.content.encode()) <= 1200
+                originals = {h.entry_id: h.text for h in page.hits}
+                assert all(f.text == originals[f.address.entry_id][f.start : f.end] for f in result.fragments)
+
+    asyncio.run(check())
+
+
+def test_scientific_symbol_matches_its_name_without_rewriting_evidence():
+    async def check():
+        async with open_builtin_runtime(BuiltinConfig()) as runtime:
+            assert runtime.scopes is not None
+            scope = await runtime.scopes.create(
+                ScopeDraft(title="Symbols", summary="Literal scientific notation", idempotency_key="symbols")
+            )
+            memory = runtime.memory.for_scope(scope.scope_id)
+            text = "Administrative background. " * 60 + "The β marker increased after treatment."
+            await memory.remember(RememberMemoryRequest(entries=(MemoryEntryInput(kind="document", text=text),)))
+            page = await memory.search(SearchMemoryRequest(query="marker", mode="fts", limit=10))
+            result = PreparedContextBuilder().build_scopes_result(
+                request=PrepareContextRequest(query="beta", max_bytes=1200, evidence_selection=True),
+                current_scope_id=scope.scope_id,
+                memory_candidates=(
+                    PreparedMemoryCandidates(scope_id=scope.scope_id, memory_ref=page.memory_ref, hits=page.hits),
+                ),
+            )
+            assert any("The β marker increased after treatment." in f.text for f in result.fragments)
+            assert all(f.text == text[f.start : f.end] for f in result.fragments)
+            assert result.context.content is not None
+            assert result.context.content_bytes == len(result.context.content.encode()) <= 1200
+
+    asyncio.run(check())
