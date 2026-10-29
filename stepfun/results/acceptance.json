@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "timestamp": "2026-10-28T15:56:27.131Z",
+  "storage": "real seekdb",
+  "collection": "accept_mvsar6ae",
+  "checks": [
+    "incremental write",
+    "idempotent import",
+    "search after refresh",
+    "collection isolation",
+    "precision isolation",
+    "invalid vector rejection",
+    "cross-site rejection"
+  ],
+  "first": {
+    "count": 1,
+    "imported": 1,
+    "writeMs": 6.630541999998968,
+    "refreshMs": 5192.536624999999
+  },
+  "second": {
+    "count": 2,
+    "imported": 1,
+    "writeMs": 0.9332079999985581,
+    "refreshMs": 411.00566699999945
+  }
+}

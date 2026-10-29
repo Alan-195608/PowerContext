@@ -1,0 +1,115 @@
+{
+  "description": "Author-created fixed English corpus for English MiniLM; no external labels or precomputed embeddings. All text fits one chunk.",
+  "documents": [
+    {
+      "id": "database",
+      "source": "database.txt",
+      "text": "seekdb stores document text, metadata and vectors. Hybrid search combines semantic vector similarity with full text keyword ranking inside the database."
+    },
+    {
+      "id": "gpu",
+      "source": "gpu.txt",
+      "text": "WebGPU executes neural network inference on the local graphics processor in a browser. No cloud inference service is required."
+    },
+    {
+      "id": "wasm",
+      "source": "wasm.txt",
+      "text": "WebAssembly is a portable CPU inference backend. When WebGPU is unavailable the browser can automatically fall back to WASM."
+    },
+    {
+      "id": "quantization",
+      "source": "quantization.txt",
+      "text": "INT8 quantization represents model weights with eight bit integers instead of float32 values, reducing download size and memory requirements."
+    },
+    {
+      "id": "batch",
+      "source": "batch.txt",
+      "text": "Batch processing embeds multiple documents in one inference call. It improves throughput by reducing per call overhead."
+    },
+    {
+      "id": "index",
+      "source": "index.txt",
+      "text": "After incremental document writes refresh the seekdb vector index before searching for the newly imported content."
+    },
+    {
+      "id": "privacy",
+      "source": "privacy.txt",
+      "text": "Local embedding keeps inference on the user device. The application sends document text, metadata and computed vectors to the local seekdb database."
+    },
+    {
+      "id": "cache",
+      "source": "cache.txt",
+      "text": "The browser caches downloaded model files. A warm model load reuses cached weights instead of downloading the model again."
+    },
+    {
+      "id": "recall",
+      "source": "recall.txt",
+      "text": "Recall at K measures the fraction of relevant documents retrieved among the top K search results. NDCG also rewards correct ranking order."
+    },
+    {
+      "id": "bread",
+      "source": "bread.txt",
+      "text": "To bake sourdough bread mix flour water salt and starter. Let the dough rise before baking it in a hot oven."
+    },
+    {
+      "id": "garden",
+      "source": "garden.txt",
+      "text": "Tomato plants need sunlight regular watering and fertile soil. Support tall plants with stakes."
+    },
+    {
+      "id": "space",
+      "source": "space.txt",
+      "text": "The moon orbits Earth. Astronauts explored the lunar surface and collected rocks during the Apollo missions."
+    }
+  ],
+  "queries": [
+    {
+      "text": "How does hybrid retrieval combine vectors and keywords?",
+      "relevant": [
+        "database"
+      ]
+    },
+    {
+      "text": "What happens when the browser has no graphics accelerator?",
+      "relevant": [
+        "wasm"
+      ]
+    },
+    {
+      "text": "How can we shrink model weights to eight bits?",
+      "relevant": [
+        "quantization"
+      ]
+    },
+    {
+      "text": "How can we encode many texts more efficiently?",
+      "relevant": [
+        "batch"
+      ]
+    },
+    {
+      "text": "How do newly written vectors become searchable?",
+      "relevant": [
+        "index"
+      ]
+    },
+    {
+      "text": "What measures ranking quality and relevant document coverage?",
+      "relevant": [
+        "recall"
+      ]
+    },
+    {
+      "text": "How do I make sourdough?",
+      "relevant": [
+        "bread"
+      ]
+    },
+    {
+      "text": "How does the model avoid downloading again?",
+      "relevant": [
+        "cache"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2569 @@
+{
+  "schema": "stepfun.benchmark.v1",
+  "timestamp": "2026-10-28T16:01:49.678Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+  "hardwareConcurrency": 10,
+  "deviceMemory": 16,
+  "model": "Xenova/all-MiniLM-L6-v2",
+  "revision": "751bff37182d3f1213fa05d7196b954e230abad9",
+  "runs": [
+    {
+      "config": {
+        "dtype": "fp32",
+        "forceWasm": true,
+        "batch": 1
+      },
+      "runtime": {
+        "backend": "wasm",
+        "fallback": "用户强制WASM",
+        "loadMs": 538.9000000953674,
+        "dtype": "fp32",
+        "model": "Xenova/all-MiniLM-L6-v2",
+        "revision": "751bff37182d3f1213fa05d7196b954e230abad9"
+      },
+      "collection": "bench_5b20c87c7950",
+      "imports": [
+        {
+          "repeat": 0,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 37.16766700000153,
+          "refreshMs": 2076.5540409999994,
+          "embedMs": 212.59999990463257,
+          "importE2eMs": 3939.2999999523163
+        },
+        {
+          "repeat": 1,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 148.48362499999712,
+          "refreshMs": 411.55262500000026,
+          "embedMs": 156.5,
+          "importE2eMs": 722
+        },
+        {
+          "repeat": 2,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 6.205541999999696,
+          "refreshMs": 418.90229199999885,
+          "embedMs": 149.10000014305115,
+          "importE2eMs": 582.2000000476837
+        }
+      ],
+      "queries": [
+        {
+          "repeat": 0,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.099999904632568,
+          "searchMs": 12.616249999999127,
+          "e2eMs": 22.799999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "privacy",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.099999904632568,
+          "searchMs": 1.430292000000918,
+          "e2eMs": 11.299999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.2983340000027965,
+          "e2eMs": 10.5
+        },
+        {
+          "repeat": 0,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.8999998569488525,
+          "searchMs": 1.7118750000008731,
+          "e2eMs": 11.399999856948853
+        },
+        {
+          "repeat": 0,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.599999904632568,
+          "searchMs": 1.3239580000008573,
+          "e2eMs": 9.599999904632568
+        },
+        {
+          "repeat": 0,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6,
+          "searchMs": 1.3355410000003758,
+          "e2eMs": 10
+        },
+        {
+          "repeat": 0,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "batch",
+            "garden",
+            "gpu"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.299999952316284,
+          "searchMs": 1.3032920000005106,
+          "e2eMs": 10.299999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.599999904632568,
+          "searchMs": 1.6827500000035798,
+          "e2eMs": 10.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.200000047683716,
+          "searchMs": 1.3599169999979495,
+          "e2eMs": 10.400000095367432
+        },
+        {
+          "repeat": 1,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "privacy",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.200000047683716,
+          "searchMs": 1.4070409999985714,
+          "e2eMs": 10.5
+        },
+        {
+          "repeat": 1,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.400000095367432,
+          "searchMs": 1.280125000001135,
+          "e2eMs": 11.5
+        },
+        {
+          "repeat": 1,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 5.799999952316284,
+          "searchMs": 1.5068749999991269,
+          "e2eMs": 9.700000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.800000190734863,
+          "searchMs": 1.228332999999111,
+          "e2eMs": 9.300000190734863
+        },
+        {
+          "repeat": 1,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.599999904632568,
+          "searchMs": 1.2399580000019341,
+          "e2eMs": 11.099999904632568
+        },
+        {
+          "repeat": 1,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "batch",
+            "garden",
+            "gpu"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5,
+          "searchMs": 1.3012500000004366,
+          "e2eMs": 9
+        },
+        {
+          "repeat": 1,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.5,
+          "searchMs": 1.2371659999989788,
+          "e2eMs": 9
+        },
+        {
+          "repeat": 2,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6,
+          "searchMs": 1.3974579999994603,
+          "e2eMs": 10.099999904632568
+        },
+        {
+          "repeat": 2,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "privacy",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6,
+          "searchMs": 1.253499999998894,
+          "e2eMs": 9.800000190734863
+        },
+        {
+          "repeat": 2,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6,
+          "searchMs": 1.2939579999983835,
+          "e2eMs": 13
+        },
+        {
+          "repeat": 2,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6,
+          "searchMs": 1.3093339999977616,
+          "e2eMs": 10.099999904632568
+        },
+        {
+          "repeat": 2,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.4999170000010054,
+          "e2eMs": 10.799999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.6000001430511475,
+          "searchMs": 1.3704580000012356,
+          "e2eMs": 13
+        },
+        {
+          "repeat": 2,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "batch",
+            "garden",
+            "gpu"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.200000047683716,
+          "searchMs": 1.2145420000015292,
+          "e2eMs": 8.900000095367432
+        },
+        {
+          "repeat": 2,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 5.700000047683716,
+          "searchMs": 1.230333999999857,
+          "e2eMs": 9.399999856948853
+        }
+      ],
+      "summary": {
+        "writeRefreshMedianMs": 492.57204199999796,
+        "recallAt5": 1,
+        "ndcgAt5": 0.9077324383928644,
+        "warmQueryE2eMedianMs": 10.099999904632568,
+        "warmSearchMedianMs": 1.29760399999941,
+        "documentsPerSecond": 78.53403137685083
+      }
+    },
+    {
+      "config": {
+        "dtype": "q8",
+        "forceWasm": true,
+        "batch": 1
+      },
+      "runtime": {
+        "backend": "wasm",
+        "fallback": "用户强制WASM",
+        "loadMs": 81.79999995231628,
+        "dtype": "q8",
+        "model": "Xenova/all-MiniLM-L6-v2",
+        "revision": "751bff37182d3f1213fa05d7196b954e230abad9"
+      },
+      "collection": "bench_f637bd955d24",
+      "imports": [
+        {
+          "repeat": 0,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 36.659583000000566,
+          "refreshMs": 307.7361660000024,
+          "embedMs": 186.20000004768372,
+          "importE2eMs": 546
+        },
+        {
+          "repeat": 1,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 149.56729100000666,
+          "refreshMs": 410.47433399999863,
+          "embedMs": 170.39999985694885,
+          "importE2eMs": 736.2000000476837
+        },
+        {
+          "repeat": 2,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 6.214500000001863,
+          "refreshMs": 311.6145000000033,
+          "embedMs": 161.79999947547913,
+          "importE2eMs": 486.5
+        }
+      ],
+      "queries": [
+        {
+          "repeat": 0,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 3.180584000001545,
+          "e2eMs": 12.599999904632568
+        },
+        {
+          "repeat": 0,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 1.6188750000001164,
+          "e2eMs": 11.799999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.700000047683716,
+          "searchMs": 1.4207919999971637,
+          "e2eMs": 11.5
+        },
+        {
+          "repeat": 0,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.099999904632568,
+          "searchMs": 1.258165999999619,
+          "e2eMs": 11
+        },
+        {
+          "repeat": 0,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.1000001430511475,
+          "searchMs": 2.186667000001762,
+          "e2eMs": 53.09999990463257
+        },
+        {
+          "repeat": 0,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 8.900000095367432,
+          "searchMs": 1.3580839999995078,
+          "e2eMs": 13
+        },
+        {
+          "repeat": 0,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 8.299999952316284,
+          "searchMs": 1.754040999992867,
+          "e2eMs": 13.200000047683716
+        },
+        {
+          "repeat": 0,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "wasm",
+            "index"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.900000095367432,
+          "searchMs": 1.3776660000003176,
+          "e2eMs": 12
+        },
+        {
+          "repeat": 1,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 9,
+          "searchMs": 1.3372079999971902,
+          "e2eMs": 13.5
+        },
+        {
+          "repeat": 1,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.299999952316284,
+          "searchMs": 1.3875830000033602,
+          "e2eMs": 11
+        },
+        {
+          "repeat": 1,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.700000047683716,
+          "searchMs": 1.3926660000070115,
+          "e2eMs": 12
+        },
+        {
+          "repeat": 1,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.299999952316284,
+          "searchMs": 1.3025409999972908,
+          "e2eMs": 11
+        },
+        {
+          "repeat": 1,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.599999904632568,
+          "searchMs": 1.2857500000027358,
+          "e2eMs": 10.399999856948853
+        },
+        {
+          "repeat": 1,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.3197500000023865,
+          "e2eMs": 11.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.099999904632568,
+          "searchMs": 1.2160829999993439,
+          "e2eMs": 10.199999809265137
+        },
+        {
+          "repeat": 1,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "wasm",
+            "index"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.599999904632568,
+          "searchMs": 1.3306659999943804,
+          "e2eMs": 10.700000047683716
+        },
+        {
+          "repeat": 2,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7,
+          "searchMs": 1.3996660000047996,
+          "e2eMs": 11
+        },
+        {
+          "repeat": 2,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.700000047683716,
+          "searchMs": 1.369416999994428,
+          "e2eMs": 11.700000047683716
+        },
+        {
+          "repeat": 2,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.400000095367432,
+          "searchMs": 1.7003340000010212,
+          "e2eMs": 11.599999904632568
+        },
+        {
+          "repeat": 2,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.8999998569488525,
+          "searchMs": 1.2078340000007302,
+          "e2eMs": 10.400000095367432
+        },
+        {
+          "repeat": 2,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.200000047683716,
+          "searchMs": 1.2105000000010477,
+          "e2eMs": 9.400000095367432
+        },
+        {
+          "repeat": 2,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.400000095367432,
+          "searchMs": 1.4220839999979944,
+          "e2eMs": 10.299999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.338833000001614,
+          "e2eMs": 10.600000143051147
+        },
+        {
+          "repeat": 2,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "wasm",
+            "index"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.599999904632568,
+          "searchMs": 1.4618750000008731,
+          "e2eMs": 22.5
+        }
+      ],
+      "summary": {
+        "writeRefreshMedianMs": 438.93531250000524,
+        "recallAt5": 1,
+        "ndcgAt5": 0.9077324383928644,
+        "warmQueryE2eMedianMs": 11,
+        "warmSearchMedianMs": 1.338020499999402,
+        "documentsPerSecond": 72.24563530472355
+      }
+    },
+    {
+      "config": {
+        "dtype": "q8",
+        "forceWasm": true,
+        "batch": 8,
+        "writeBatch": 1
+      },
+      "runtime": {
+        "backend": "wasm",
+        "fallback": "用户强制WASM",
+        "loadMs": 60.89999985694885,
+        "dtype": "q8",
+        "model": "Xenova/all-MiniLM-L6-v2",
+        "revision": "751bff37182d3f1213fa05d7196b954e230abad9"
+      },
+      "collection": "bench_676cb3e8e914",
+      "imports": [
+        {
+          "repeat": 0,
+          "count": 12,
+          "imported": 1,
+          "writeMs": 39.92433399998845,
+          "refreshMs": 4563.32016599999,
+          "embedMs": 166.29999995231628,
+          "importE2eMs": 4838.400000095367
+        },
+        {
+          "repeat": 1,
+          "count": 12,
+          "imported": 1,
+          "writeMs": 173.93395900000178,
+          "refreshMs": 4751.2207079999935,
+          "embedMs": 173.70000004768372,
+          "importE2eMs": 5146.200000047684
+        },
+        {
+          "repeat": 2,
+          "count": 12,
+          "imported": 1,
+          "writeMs": 14.682792000006884,
+          "refreshMs": 4661.941207999989,
+          "embedMs": 165.09999990463257,
+          "importE2eMs": 4895.599999904633
+        }
+      ],
+      "queries": [
+        {
+          "repeat": 0,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.1000001430511475,
+          "searchMs": 2.9830829999991693,
+          "e2eMs": 13.699999809265137
+        },
+        {
+          "repeat": 0,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 2.01483300000109,
+          "e2eMs": 12
+        },
+        {
+          "repeat": 0,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.8999998569488525,
+          "searchMs": 1.2335000000020955,
+          "e2eMs": 11.700000047683716
+        },
+        {
+          "repeat": 0,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.5348330000051646,
+          "e2eMs": 10.799999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.3999998569488525,
+          "searchMs": 1.4375,
+          "e2eMs": 10.899999856948853
+        },
+        {
+          "repeat": 0,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 1.2289999999993597,
+          "e2eMs": 10.900000095367432
+        },
+        {
+          "repeat": 0,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.672500000000582,
+          "e2eMs": 13.700000047683716
+        },
+        {
+          "repeat": 0,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.8999998569488525,
+          "searchMs": 1.3143750000017462,
+          "e2eMs": 11
+        },
+        {
+          "repeat": 1,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.1000001430511475,
+          "searchMs": 1.4230420000021695,
+          "e2eMs": 11.799999952316284
+        },
+        {
+          "repeat": 1,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 1.3607080000001588,
+          "e2eMs": 11.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 1.2972499999959837,
+          "e2eMs": 12
+        },
+        {
+          "repeat": 1,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.299999952316284,
+          "searchMs": 1.3574589999989257,
+          "e2eMs": 11.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7,
+          "searchMs": 1.4120420000035665,
+          "e2eMs": 11.5
+        },
+        {
+          "repeat": 1,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.3999998569488525,
+          "searchMs": 1.2891659999950207,
+          "e2eMs": 11.399999856948853
+        },
+        {
+          "repeat": 1,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.299999952316284,
+          "searchMs": 1.2868750000052387,
+          "e2eMs": 10.100000143051147
+        },
+        {
+          "repeat": 1,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.099999904632568,
+          "searchMs": 1.374667000003683,
+          "e2eMs": 11.299999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.699999809265137,
+          "searchMs": 1.4148329999952693,
+          "e2eMs": 11.900000095367432
+        },
+        {
+          "repeat": 2,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.799999952316284,
+          "searchMs": 1.228332999999111,
+          "e2eMs": 11.399999856948853
+        },
+        {
+          "repeat": 2,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 1.3230829999956768,
+          "e2eMs": 11.200000047683716
+        },
+        {
+          "repeat": 2,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.299999952316284,
+          "searchMs": 1.4196660000015981,
+          "e2eMs": 11.200000047683716
+        },
+        {
+          "repeat": 2,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.8433329999970738,
+          "e2eMs": 10.799999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.247957999999926,
+          "e2eMs": 10.600000143051147
+        },
+        {
+          "repeat": 2,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.199999809265137,
+          "searchMs": 1.3708339999939199,
+          "e2eMs": 11.299999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.234083000003011,
+          "e2eMs": 13.5
+        }
+      ],
+      "summary": {
+        "writeRefreshMedianMs": 4800.889333499996,
+        "recallAt5": 1,
+        "ndcgAt5": 0.9077324383928644,
+        "warmQueryE2eMedianMs": 11.299999952316284,
+        "warmSearchMedianMs": 1.3590834999995423,
+        "documentsPerSecond": 70.83825266640446
+      }
+    },
+    {
+      "config": {
+        "dtype": "q8",
+        "forceWasm": true,
+        "batch": 8,
+        "writeBatch": 128
+      },
+      "runtime": {
+        "backend": "wasm",
+        "fallback": "用户强制WASM",
+        "loadMs": 57.90000009536743,
+        "dtype": "q8",
+        "model": "Xenova/all-MiniLM-L6-v2",
+        "revision": "751bff37182d3f1213fa05d7196b954e230abad9"
+      },
+      "collection": "bench_c7c384008637",
+      "imports": [
+        {
+          "repeat": 0,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 28.595583999995142,
+          "refreshMs": 312.13454099999944,
+          "embedMs": 174.10000014305115,
+          "importE2eMs": 529.1000001430511
+        },
+        {
+          "repeat": 1,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 146.25125000000116,
+          "refreshMs": 203.30854199999885,
+          "embedMs": 261.60000014305115,
+          "importE2eMs": 615.7000000476837
+        },
+        {
+          "repeat": 2,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 5.317250000000058,
+          "refreshMs": 415.8836670000019,
+          "embedMs": 162.70000004768372,
+          "importE2eMs": 588.1999998092651
+        }
+      ],
+      "queries": [
+        {
+          "repeat": 0,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.8999998569488525,
+          "searchMs": 4.064209000003757,
+          "e2eMs": 15.399999856948853
+        },
+        {
+          "repeat": 0,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.300000190734863,
+          "searchMs": 1.4492499999978463,
+          "e2eMs": 11.800000190734863
+        },
+        {
+          "repeat": 0,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 8.199999809265137,
+          "searchMs": 1.4164590000000317,
+          "e2eMs": 13.199999809265137
+        },
+        {
+          "repeat": 0,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 8,
+          "searchMs": 3.2592920000024606,
+          "e2eMs": 22.200000047683716
+        },
+        {
+          "repeat": 0,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.900000095367432,
+          "searchMs": 1.362208999998984,
+          "e2eMs": 11.5
+        },
+        {
+          "repeat": 0,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7.5,
+          "searchMs": 1.3615409999983967,
+          "e2eMs": 11.799999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.3355000000010477,
+          "e2eMs": 12.100000143051147
+        },
+        {
+          "repeat": 0,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.400000095367432,
+          "searchMs": 1.307042000000365,
+          "e2eMs": 10.199999809265137
+        },
+        {
+          "repeat": 1,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.5605829999985872,
+          "e2eMs": 11.299999952316284
+        },
+        {
+          "repeat": 1,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 7.200000047683716,
+          "searchMs": 1.473082999997132,
+          "e2eMs": 11.700000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 7,
+          "searchMs": 1.5970830000005662,
+          "e2eMs": 11.700000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.900000095367432,
+          "searchMs": 1.31395799999882,
+          "e2eMs": 10.599999904632568
+        },
+        {
+          "repeat": 1,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.599999904632568,
+          "searchMs": 1.2927090000011958,
+          "e2eMs": 10.600000143051147
+        },
+        {
+          "repeat": 1,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.299999952316284,
+          "searchMs": 1.3855419999963487,
+          "e2eMs": 10
+        },
+        {
+          "repeat": 1,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.200000047683716,
+          "searchMs": 1.2666669999962323,
+          "e2eMs": 10
+        },
+        {
+          "repeat": 1,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.299999952316284,
+          "searchMs": 1.2673329999961425,
+          "e2eMs": 10.200000047683716
+        },
+        {
+          "repeat": 2,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.900000095367432,
+          "searchMs": 1.3114580000037677,
+          "e2eMs": 11.300000190734863
+        },
+        {
+          "repeat": 2,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.900000095367432,
+          "searchMs": 1.2174589999995078,
+          "e2eMs": 10.5
+        },
+        {
+          "repeat": 2,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.8999998569488525,
+          "searchMs": 1.3166249999994761,
+          "e2eMs": 10.799999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.4575420000037411,
+          "e2eMs": 11.200000047683716
+        },
+        {
+          "repeat": 2,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.5,
+          "searchMs": 1.2242910000059055,
+          "e2eMs": 10.299999952316284
+        },
+        {
+          "repeat": 2,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.799999952316284,
+          "searchMs": 1.2342920000010054,
+          "e2eMs": 10.599999904632568
+        },
+        {
+          "repeat": 2,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.299999952316284,
+          "searchMs": 1.4122500000012224,
+          "e2eMs": 11.900000095367432
+        },
+        {
+          "repeat": 2,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 6.6000001430511475,
+          "searchMs": 1.2815839999966556,
+          "e2eMs": 10.599999904632568
+        }
+      ],
+      "summary": {
+        "writeRefreshMedianMs": 385.380354500001,
+        "recallAt5": 1,
+        "ndcgAt5": 0.9077324383928644,
+        "warmQueryE2eMedianMs": 10.600000023841858,
+        "warmSearchMedianMs": 1.3127080000012938,
+        "documentsPerSecond": 56.56375203679312
+      }
+    },
+    {
+      "config": {
+        "dtype": "q8",
+        "forceWasm": false,
+        "batch": 8
+      },
+      "runtime": {
+        "backend": "webgpu",
+        "fallback": null,
+        "loadMs": 182,
+        "dtype": "q8",
+        "model": "Xenova/all-MiniLM-L6-v2",
+        "revision": "751bff37182d3f1213fa05d7196b954e230abad9"
+      },
+      "collection": "bench_a05dd9434464",
+      "imports": [
+        {
+          "repeat": 0,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 33.2053339999984,
+          "refreshMs": 413.4397920000047,
+          "embedMs": 239.30000019073486,
+          "importE2eMs": 699.2000000476837
+        },
+        {
+          "repeat": 1,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 154.5871249999982,
+          "refreshMs": 307.4251250000016,
+          "embedMs": 232.2000002861023,
+          "importE2eMs": 698.7000000476837
+        },
+        {
+          "repeat": 2,
+          "count": 12,
+          "imported": 12,
+          "writeMs": 5.636540999999852,
+          "refreshMs": 414.6229999999996,
+          "embedMs": 228,
+          "importE2eMs": 653
+        }
+      ],
+      "queries": [
+        {
+          "repeat": 0,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 40.19999980926514,
+          "searchMs": 3.1238330000051064,
+          "e2eMs": 46.5
+        },
+        {
+          "repeat": 0,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 36.19999980926514,
+          "searchMs": 1.4020840000011958,
+          "e2eMs": 40.19999980926514
+        },
+        {
+          "repeat": 0,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 33.799999952316284,
+          "searchMs": 1.339916999997513,
+          "e2eMs": 38.40000009536743
+        },
+        {
+          "repeat": 0,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 33.09999990463257,
+          "searchMs": 1.304667000003974,
+          "e2eMs": 37.200000047683716
+        },
+        {
+          "repeat": 0,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 32.89999985694885,
+          "searchMs": 1.3108330000031856,
+          "e2eMs": 37.200000047683716
+        },
+        {
+          "repeat": 0,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 46.200000047683716,
+          "searchMs": 1.8670830000046408,
+          "e2eMs": 50.799999952316284
+        },
+        {
+          "repeat": 0,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 36.60000014305115,
+          "searchMs": 1.2610829999975977,
+          "e2eMs": 43.10000014305115
+        },
+        {
+          "repeat": 0,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 36.90000009536743,
+          "searchMs": 1.2840409999989788,
+          "e2eMs": 41.09999990463257
+        },
+        {
+          "repeat": 1,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 36.299999952316284,
+          "searchMs": 1.2915419999990263,
+          "e2eMs": 40.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 37.700000047683716,
+          "searchMs": 1.3287909999999101,
+          "e2eMs": 42.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 35.60000014305115,
+          "searchMs": 1.6240840000027674,
+          "e2eMs": 41.200000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 37.90000009536743,
+          "searchMs": 1.297707999998238,
+          "e2eMs": 42.299999952316284
+        },
+        {
+          "repeat": 1,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 34.200000047683716,
+          "searchMs": 1.7744579999998678,
+          "e2eMs": 41.59999990463257
+        },
+        {
+          "repeat": 1,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 34.69999980926514,
+          "searchMs": 1.5176250000004075,
+          "e2eMs": 38.799999952316284
+        },
+        {
+          "repeat": 1,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 33.90000009536743,
+          "searchMs": 1.276624999998603,
+          "e2eMs": 37.700000047683716
+        },
+        {
+          "repeat": 1,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 39.90000009536743,
+          "searchMs": 1.6123330000045826,
+          "e2eMs": 44.60000014305115
+        },
+        {
+          "repeat": 2,
+          "query": "How does hybrid retrieval combine vectors and keywords?",
+          "relevant": [
+            "database"
+          ],
+          "ids": [
+            "database",
+            "privacy",
+            "space",
+            "quantization",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 38.90000009536743,
+          "searchMs": 1.345707999993465,
+          "e2eMs": 45.69999980926514
+        },
+        {
+          "repeat": 2,
+          "query": "What happens when the browser has no graphics accelerator?",
+          "relevant": [
+            "wasm"
+          ],
+          "ids": [
+            "gpu",
+            "wasm",
+            "cache",
+            "batch",
+            "privacy"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 35,
+          "searchMs": 1.2791660000002594,
+          "e2eMs": 39
+        },
+        {
+          "repeat": 2,
+          "query": "How can we shrink model weights to eight bits?",
+          "relevant": [
+            "quantization"
+          ],
+          "ids": [
+            "quantization",
+            "cache",
+            "wasm",
+            "batch",
+            "bread"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 32.59999990463257,
+          "searchMs": 1.2517920000027516,
+          "e2eMs": 36.5
+        },
+        {
+          "repeat": 2,
+          "query": "How can we encode many texts more efficiently?",
+          "relevant": [
+            "batch"
+          ],
+          "ids": [
+            "wasm",
+            "batch",
+            "privacy",
+            "database",
+            "quantization"
+          ],
+          "recall": 1,
+          "ndcg": 0.6309297535714575,
+          "queryEmbedMs": 31.5,
+          "searchMs": 1.6054999999978463,
+          "e2eMs": 36
+        },
+        {
+          "repeat": 2,
+          "query": "How do newly written vectors become searchable?",
+          "relevant": [
+            "index"
+          ],
+          "ids": [
+            "index",
+            "database",
+            "privacy",
+            "recall",
+            "batch"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 33.10000014305115,
+          "searchMs": 1.3030409999992116,
+          "e2eMs": 37.30000019073486
+        },
+        {
+          "repeat": 2,
+          "query": "What measures ranking quality and relevant document coverage?",
+          "relevant": [
+            "recall"
+          ],
+          "ids": [
+            "recall",
+            "database",
+            "privacy",
+            "index",
+            "garden"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 32.799999952316284,
+          "searchMs": 1.3203749999956926,
+          "e2eMs": 37.09999990463257
+        },
+        {
+          "repeat": 2,
+          "query": "How do I make sourdough?",
+          "relevant": [
+            "bread"
+          ],
+          "ids": [
+            "bread",
+            "wasm",
+            "garden",
+            "batch",
+            "cache"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 34,
+          "searchMs": 1.5072909999944386,
+          "e2eMs": 38.90000009536743
+        },
+        {
+          "repeat": 2,
+          "query": "How does the model avoid downloading again?",
+          "relevant": [
+            "cache"
+          ],
+          "ids": [
+            "cache",
+            "quantization",
+            "privacy",
+            "index",
+            "wasm"
+          ],
+          "recall": 1,
+          "ndcg": 1,
+          "queryEmbedMs": 35.200000047683716,
+          "searchMs": 1.4609159999963595,
+          "e2eMs": 41.200000047683716
+        }
+      ],
+      "summary": {
+        "writeRefreshMedianMs": 441.1358954999996,
+        "recallAt5": 1,
+        "ndcgAt5": 0.9077324383928644,
+        "warmQueryE2eMedianMs": 39.60000002384186,
+        "warmSearchMedianMs": 1.3372494999966875,
+        "documentsPerSecond": 52.151238559494594
+      }
+    }
+  ],
+  "completed": true
+}
