@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import math
 import re
+import sqlite3
 from collections import Counter
+from contextlib import closing
 from dataclasses import replace
 
 from powercontext.artifacts import ArtifactAddress
@@ -18,6 +20,23 @@ from powercontext.builtin.runtime.prepared_context import (
 from powercontext.builtin.runtime.prepared_text import TRUST_POLICY
 
 _STOP = frozenset([
+    "we",
+    "our",
+    "their",
+    "has",
+    "have",
+    "had",
+    "can",
+    "could",
+    "may",
+    "might",
+    "also",
+    "than",
+    "which",
+    "but",
+    "does",
+    "did",
+    "do",
     "a",
     "an",
     "the",
@@ -49,11 +68,14 @@ _STOP = frozenset([
 
 
 def _tokens(text):
-    return [
-        word[:-1] if len(word) > 4 and word.endswith("s") else word
-        for word in re.findall(r"\w+", text.casefold())
-        if word not in _STOP
-    ]
+    words = [word for word in re.findall(r"\w+", text.casefold()) if word not in _STOP]
+    if not words:
+        return []
+    with closing(sqlite3.connect(":memory:")) as database:
+        database.execute("CREATE VIRTUAL TABLE words USING fts5(text, tokenize='porter unicode61')")
+        database.execute("CREATE VIRTUAL TABLE vocabulary USING fts5vocab(words, instance)")
+        database.execute("INSERT INTO words VALUES (?)", (" ".join(words),))
+        return [row[0] for row in database.execute("SELECT term FROM vocabulary ORDER BY offset")]
 
 
 def _render(fragments):
@@ -81,6 +103,9 @@ def _render(fragments):
 
 def select_evidence(request, groups):  # noqa: C901 - bounded literal selection and packing
     query = Counter(_tokens(request.query))
+    identifiers = re.findall(r"\b(?:[A-Z]{2,}[0-9]*|[a-zA-Z]+[0-9]+[a-zA-Z0-9]*)\b", request.query)
+    for term in _tokens(" ".join(identifiers)):
+        query[term] = max(query[term], 3)
     candidates = []
     for group in groups:
         for hit in group.hits:
@@ -103,18 +128,37 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
     document_tokens = {}
     for fragment, tokens, _ in candidates:
         document_tokens.setdefault(identity(fragment), Counter()).update(tokens)
+    document_frequency = Counter(t for tokens in document_tokens.values() for t in tokens)
+    average_length = sum(sum(tokens.values()) for tokens in document_tokens.values()) / max(1, len(document_tokens))
     document_scores = {
-        address: sum(math.log(1 + len(candidates) / (1 + frequency[t])) for t in query if t in tokens)
+        address: sum(
+            math.log(1 + (len(document_tokens) - document_frequency[t] + 0.5) / (document_frequency[t] + 0.5))
+            * tokens[t]
+            * query[t]
+            * 2.2
+            / (tokens[t] + 1.2 * (0.25 + 0.75 * sum(tokens.values()) / average_length))
+            for t in query
+            if tokens[t]
+        )
         for address, tokens in document_tokens.items()
     }
+    for fragment, _, original in candidates:
+        if fragment.start == 0:
+            title = set(_tokens(original[:200]))
+            document_scores[identity(fragment)] *= 1 + 4 * len(title & query.keys()) / max(1, len(query))
     maximum = max(document_scores.values(), default=1) or 1
     scores = []
     for fragment, tokens, _ in candidates:
         matches = set(query) & tokens.keys()
-        score = sum(math.log(1 + len(candidates) / (1 + frequency[t])) for t in matches)
+        score = sum(math.log(1 + len(candidates) / (1 + frequency[t])) * query[t] for t in matches)
         score *= 1 + len(matches) / max(1, len(query))
-        score *= (document_scores[identity(fragment)] / maximum) ** 0.5
+        score *= (document_scores[identity(fragment)] / maximum) ** 1.0
         score /= max(1, sum(tokens.values())) ** 0.35
+        lower = fragment.text.lower()
+        if re.search(r"\b(results?|conclusions?|found|showed|demonstrat|indicat|suggest)", lower):
+            score *= 1.5
+        if fragment.start == 0:
+            score *= 0.3
         scores.append(score)
     # Evaluate contiguous windows: one citation can then pay for several useful
     # sentences, including connecting evidence with few literal query words.
@@ -131,7 +175,7 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
             if size > request.max_bytes:
                 break
             if total:
-                windows.append((total / max(1, len(fragment.text)) ** 0.25, left, fragment))
+                windows.append((total / max(1, len(fragment.text)) ** 0.35, left, fragment))
     windows.sort(key=lambda value: (-value[0], value[1]))
     selected = []
     for _, _, fragment in windows:
@@ -149,7 +193,12 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
             for other, _, _ in candidates
             if other.address == fragment.address and (other.start >= fragment.end or other.end <= fragment.start)
         ]
-        neighbors.sort(key=lambda other: min(abs(other.start - fragment.end), abs(fragment.start - other.end)))
+        neighbors.sort(
+            key=lambda other: (
+                min(abs(other.start - fragment.end), abs(fragment.start - other.end)),
+                other.start < fragment.start,
+            )
+        )
         for other in neighbors:
             start, end = min(fragment.start, other.start), max(fragment.end, other.end)
             trial = list(selected)
@@ -157,6 +206,18 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
             if len(_render(trial).encode()) <= request.max_bytes:
                 selected, fragment = trial, trial[index]
             else:
+                low, high = 1, (fragment.start - start) + (end - fragment.end)
+                while low <= high:
+                    length = (low + high) // 2
+                    partial_start = fragment.start - length if start < fragment.start else fragment.start
+                    partial_end = fragment.end + length if end > fragment.end else fragment.end
+                    trial[index] = replace(
+                        fragment, start=partial_start, end=partial_end, text=original[partial_start:partial_end]
+                    )
+                    if len(_render(trial).encode()) <= request.max_bytes:
+                        selected, low = list(trial), length + 1
+                    else:
+                        high = length - 1
                 break
     if not selected and candidates and max(scores, default=0) > 0:
         best = max(range(len(scores)), key=scores.__getitem__)

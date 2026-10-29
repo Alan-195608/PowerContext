@@ -123,3 +123,32 @@ def test_pdf_company_identity_prevents_cross_issuer_statement_matches():
             assert {c.entry_id for c in citations} == {"30", "31"}
 
     asyncio.run(check())
+
+
+def test_query_word_forms_find_late_literal_evidence():
+    async def check():
+        async with open_builtin_runtime(BuiltinConfig()) as runtime:
+            assert runtime.scopes is not None
+            scope = await runtime.scopes.create(
+                ScopeDraft(title="Inflections", summary="Literal selection", idempotency_key="inflections")
+            )
+            memory = runtime.memory.for_scope(scope.scope_id)
+            text = "The enzyme was used for routine laboratory preparation. " * 30
+            text += "Results showed that the enzyme phosphorylated the target after activation."
+            await memory.remember(RememberMemoryRequest(entries=(MemoryEntryInput(kind="document", text=text),)))
+            page = await memory.search(SearchMemoryRequest(query="enzyme", mode="fts", limit=10))
+            result = PreparedContextBuilder().build_scopes_result(
+                request=PrepareContextRequest(
+                    query="enzyme phosphorylation activates target", max_bytes=1200, evidence_selection=True
+                ),
+                current_scope_id=scope.scope_id,
+                memory_candidates=(
+                    PreparedMemoryCandidates(scope_id=scope.scope_id, memory_ref=page.memory_ref, hits=page.hits),
+                ),
+            )
+            assert result.fragments and any("phosphorylated the target" in f.text for f in result.fragments)
+            assert all(f.text == text[f.start : f.end] for f in result.fragments)
+            assert result.context.content is not None
+            assert result.context.content_bytes == len(result.context.content.encode()) <= 1200
+
+    asyncio.run(check())
