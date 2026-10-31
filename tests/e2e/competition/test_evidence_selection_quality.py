@@ -38,6 +38,19 @@ _LATE_EVIDENCE_QUERY = (
 
 _EVIDENCE_MARKER = "combined analysis of MSC-treated groups revealed significantly decreased risk"
 
+# An entry that restates the query topic in its opening and repeats the same
+# statement as its closing finding. Both sentences match the same query terms,
+# so only their depth in the entry separates them.
+_TOPIC_SENTENCE = "The cobalt sensor records reactor pressure."
+_FINDING_SENTENCE = "The cobalt sensor records reactor pressure at 37 degrees."
+_TOPIC_ENTRY = (
+    "Logbook entry for the plant. "
+    + _TOPIC_SENTENCE
+    + " "
+    + "Administrative notes were filed for the shift log. " * 24
+    + _FINDING_SENTENCE
+)
+
 
 async def _select(runtime, scope_id, documents, query, max_bytes=1400):
     memory = runtime.memory.for_scope(scope_id)
@@ -120,3 +133,42 @@ async def test_one_covered_range_is_delivered_once():
         )
         assert result.context.content is not None
         assert result.context.content_bytes == len(result.context.content.encode()) <= 1400
+
+
+@pytest.mark.asyncio
+async def test_equal_coverage_prefers_later_finding_over_the_opening_restatement():
+    """A budget that admits one region must not spend it on the entry's opening.
+
+    The shipped selector ranked two ranges that matched the same query terms
+    identically and broke the tie towards the earlier one, so a budget too small
+    for both returned the topic restatement at the top of the entry and dropped
+    the closing finding entirely. Depth inside the entry now counts as evidence
+    of value, which is the middle-and-later-body loss the challenge names.
+    """
+    async with open_builtin_runtime(BuiltinConfig()) as runtime:
+        assert runtime.scopes is not None
+        scope = await runtime.scopes.create(
+            ScopeDraft(
+                title="Depth tie",
+                summary="Later finding wins an equal-coverage tie",
+                idempotency_key="depth-tie",
+            )
+        )
+        result, originals = await _select(
+            runtime,
+            scope.scope_id,
+            [_TOPIC_ENTRY],
+            "cobalt sensor records reactor pressure",
+            max_bytes=1000,
+        )
+        assert result.fragments
+        assert any(_FINDING_SENTENCE in fragment.text for fragment in result.fragments), [
+            (fragment.start, fragment.end) for fragment in result.fragments
+        ]
+        assert not any(_TOPIC_SENTENCE in fragment.text for fragment in result.fragments)
+        assert all(
+            fragment.text == originals[fragment.address.entry_id][fragment.start : fragment.end]
+            for fragment in result.fragments
+        )
+        assert result.context.content is not None
+        assert result.context.content_bytes == len(result.context.content.encode()) <= 1000

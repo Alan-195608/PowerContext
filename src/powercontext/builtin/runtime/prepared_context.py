@@ -34,6 +34,7 @@ from powercontext.builtin.runtime.prepared_code import (
     PreparedCodeCandidate,
     assemble_code,
 )
+from powercontext.builtin.runtime.prepared_envelope import encode_envelope
 from powercontext.builtin.runtime.prepared_text import (
     TRUST_POLICY,
     ContextTextItem,
@@ -703,7 +704,7 @@ def _render(entries: Sequence[_PreparedContextEntry]) -> str:
         "trust": "untrusted_history",
         "items": [_render_entry(entry) for entry in entries],
     }
-    encoded = json.dumps(envelope, ensure_ascii=False, separators=(",", ":"))
+    encoded = encode_envelope(envelope)
     return "\n\n".join((TRUST_POLICY, f"{_BEGIN_MARKER}\n{encoded}\n{_END_MARKER}"))
 
 

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import math
 import re
 import sqlite3
@@ -18,6 +17,7 @@ from powercontext.builtin.runtime.prepared_context import (
     PreparedContextBuild,
     PreparedEvidenceFragment,
 )
+from powercontext.builtin.runtime.prepared_envelope import encode_envelope
 from powercontext.builtin.runtime.prepared_text import TRUST_POLICY
 
 _STOP = frozenset([
@@ -110,7 +110,7 @@ def _render(fragments):
     return (
         TRUST_POLICY
         + "\nBEGIN_POWERCONTEXT_PREPARED_CONTEXT_V1\n"
-        + json.dumps({"trust": "untrusted_history", "items": items}, ensure_ascii=False, separators=(",", ":"))
+        + encode_envelope({"trust": "untrusted_history", "items": items})
         + "\nEND_POWERCONTEXT_PREPARED_CONTEXT_V1"
     )
 
@@ -185,11 +185,37 @@ def _fit_query_fragment(fragment, original, query, budget):  # noqa: C901 - two 
     return max(fitting, key=lambda value: value[:4])[-1] if fitting else None
 
 
+def _compound_aliases(text):
+    """The synthetic alias term of every hyphenated compound in ``text``.
+
+    ``_tokens`` adds one alias per hyphenated compound, so "AMP-activated"
+    yields the words ``amp`` and ``activ`` *and* the alias ``ampactivated``.
+    The alias is a real matchable term - a document that spells the compound
+    the same way produces it too - but it repeats what the compound's own
+    words already say, so an undiscounted alias counts the compound twice.
+    """
+    folded = text.casefold()
+    aliases = set()
+    for compound in re.findall(r"\b[a-z0-9]+(?:[-‐‑–][a-z0-9]+)+\b", folded):  # noqa: RUF001 - normalize hyphens
+        aliases.update(_tokens(re.sub(r"[^a-z0-9]", "", compound)))
+    return aliases
+
+
+# A hyphenated compound's alias term repeats the compound's own words, so the
+# compound would otherwise carry twice the weight of a single word. The alias
+# keeps a reduced share of the weight: it still matches the documents that
+# spell the compound, but it no longer outweighs the outcome a claim is about.
+_COMPOUND_ALIAS_SHARE = 0.2
+
+
 def select_evidence(request, groups):  # noqa: C901 - bounded literal selection and packing
     query = Counter(_tokens(request.query))
     identifiers = re.findall(r"\b(?:[A-Z]{2,}[0-9]*|[a-zA-Z]+[0-9]+[a-zA-Z0-9]*)\b", request.query)
     for term in _tokens(" ".join(identifiers)):
         query[term] = max(query[term], 3)
+    for term in _compound_aliases(request.query):
+        if term in query:
+            query[term] *= _COMPOUND_ALIAS_SHARE
     candidates = []
     document_tokens = {}
     for group in groups:
@@ -240,7 +266,7 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
             document_scores[identity(fragment)] *= 1 + 4 * len(title & query.keys()) / max(1, len(query))
     maximum = max(document_scores.values(), default=1) or 1
     scores = []
-    for fragment, tokens, _ in candidates:
+    for fragment, tokens, original in candidates:
         matches = set(query) & tokens.keys()
         score = sum(math.log(1 + len(candidates) / (1 + frequency[t])) * query[t] for t in matches)
         score *= 1 + len(matches) / max(1, len(query))
@@ -252,6 +278,11 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
         lower = fragment.text.lower()
         if re.search(r"\b(results?|conclusions?|found|showed|demonstrat|indicat|suggest)", lower):
             score *= 1.5
+        # Depth inside the entry is part of the same judgement: an opening
+        # restates the topic the query already contains, while the findings that
+        # answer the query arrive later, so among ranges with equal concept
+        # coverage the later one is the evidence.
+        score *= 0.5 + fragment.end / max(1, len(original))
         if fragment.start == 0:
             score *= 0.3
         scores.append(score)
