@@ -66,6 +66,11 @@ _STOP = frozenset([
     "its",
     "for",
 ])
+_HAN = r"\u3400-\u4dbf\u4e00-\u9fff\U00020000-\U000323af"
+_WORD = re.compile(rf"[{_HAN}]|(?:(?![{_HAN}])\w)+")
+_SENTENCE = re.compile(
+    r"""\S[^\r\n]*?(?:[.!?]["'\u2019\u201d)]*(?=\s|$)|[。\uff01\uff1f]["'\u2019\u201d\uff09]*|(?=[\r\n]|$))"""
+)
 
 
 def _tokens(text):
@@ -82,7 +87,7 @@ def _tokens(text):
     compounds = re.findall(r"\b[a-z0-9]+(?:[-‐‑–][a-z0-9]+)+\b", folded)  # noqa: RUF001 - normalize hyphens
     compounds += re.findall(r"\b[a-z]{1,8}\s+[0-9]+[a-z]*\b", folded)
     extra = [re.sub(r"[^a-z0-9]", "", value) for value in compounds]
-    words = [word for word in [*re.findall(r"\w+", folded), *extra] if word not in _STOP]
+    words = [word for word in [*_WORD.findall(folded), *extra] if word not in _STOP]
     if not words:
         return []
     with closing(sqlite3.connect(":memory:")) as database:
@@ -119,7 +124,7 @@ def _fit_query_fragment(fragment, original, query, budget):  # noqa: C901 - two 
     """Fit an oversized sentence around matching concepts, not its first matching word."""
     if len(_render([fragment]).encode()) <= budget:
         return fragment
-    words = list(re.finditer(r"\w+", fragment.text))
+    words = list(_WORD.finditer(fragment.text))
     analyzed = {}
     occurrences = []
     frequencies = Counter()
@@ -226,8 +231,12 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
                 ArtifactAddress(scope_id=group.scope_id, artifact=hit.memory_ref), hit.entry_id, hit.entry_version_id
             )
             key = (address.memory.model_dump_json(), address.entry_id, address.entry_version_id)
+            # Windows assume a single forward pass over the offsets of each
+            # entry. A repeated hit would restart those offsets mid-window.
+            if key in document_tokens:
+                continue
             document_tokens[key] = Counter(_tokens(hit.text))
-            for match in re.finditer(r"\S[\s\S]*?(?:[.!?](?=\s|$)|$)", hit.text):
+            for match in _SENTENCE.finditer(hit.text):
                 start, end = match.span()
                 if start < end:
                     fragment = _fit_query_fragment(

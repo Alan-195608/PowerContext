@@ -11,7 +11,8 @@ from pathlib import Path
 
 import pytest
 
-from powercontext.builtin.artifacts.memory import MemoryEntryInput
+from powercontext.artifacts import ArtifactRef
+from powercontext.builtin.artifacts.memory import MemoryEntryInput, MemoryHit
 from powercontext.builtin.runtime import (
     BuiltinConfig,
     PrepareContextRequest,
@@ -195,3 +196,65 @@ async def test_shared_identifier_does_not_displace_the_relevant_outcome():
                 and fragment.end >= (end if budget == 1800 else start + 1)
                 for fragment in result.fragments
             )
+
+
+@pytest.mark.asyncio
+async def test_unspaced_chinese_queries_select_distinct_literal_evidence():
+    calibration = "主传感器校准后读数为三十七度。"
+    maintenance = "备用阀门检修后正常开启。"
+    original = "行政事项已归档。" * 60 + calibration + "例会记录已经整理。" * 60 + maintenance
+
+    async with open_builtin_runtime(BuiltinConfig()) as runtime:
+        assert runtime.scopes is not None
+        scope = await runtime.scopes.create(
+            ScopeDraft(title="运行记录", summary="设备操作证据", idempotency_key="unspaced-cjk")
+        )
+        memory = runtime.memory.for_scope(scope.scope_id)
+        await memory.remember(RememberMemoryRequest(entries=(MemoryEntryInput(kind="document", text=original),)))
+        listed = await memory.list()
+        assert listed.memory_ref is not None
+        entry = listed.entries[0].entry
+        hit = MemoryHit(
+            memory_ref=listed.memory_ref,
+            entry_id=entry.entry_id,
+            entry_version_id=entry.entry_version_id,
+            text=entry.text,
+            score=0.0,
+            matched_by=(),
+        )
+        candidates = (PreparedMemoryCandidates(scope_id=scope.scope_id, memory_ref=listed.memory_ref, hits=(hit,)),)
+        for query, expected, other in (
+            ("主传感器校准", calibration, maintenance),
+            ("备用阀门检修", maintenance, calibration),
+        ):
+            result = PreparedContextBuilder().build_scopes_result(
+                request=PrepareContextRequest(query=query, max_bytes=850, evidence_selection=True),
+                current_scope_id=scope.scope_id,
+                memory_candidates=candidates,
+            )
+            assert result.context.content is not None
+            assert result.context.content_bytes == len(result.context.content.encode()) <= 850
+            assert any(expected in fragment.text for fragment in result.fragments)
+            assert all(
+                other not in fragment.text and fragment.text == original[fragment.start : fragment.end]
+                for fragment in result.fragments
+            )
+
+
+def test_repeated_hit_does_not_restart_offsets_inside_a_window():
+    text = (
+        "Cobalt sensor readings. Unrelated boilerplate records from operations. "
+        "Amber sensor recorded cobalt readings at 37 degrees."
+    )
+    ref = ArtifactRef(family="memory", artifact_id="memory", revision=1)
+    hit = MemoryHit(memory_ref=ref, entry_id="entry", entry_version_id="version", text=text, score=1, matched_by=())
+    request = PrepareContextRequest(query="cobalt sensor readings", evidence_selection=True, max_bytes=1000)
+    builder = PreparedContextBuilder()
+    single = PreparedMemoryCandidates(scope_id="scope", memory_ref=ref, hits=(hit,))
+    repeated = PreparedMemoryCandidates(scope_id="scope", memory_ref=ref, hits=(hit, hit))
+    expected = builder.build_scopes_result(request=request, current_scope_id="scope", memory_candidates=(single,))
+    observed = builder.build_scopes_result(request=request, current_scope_id="scope", memory_candidates=(repeated,))
+
+    assert observed.fragments == expected.fragments
+    assert observed.fragments
+    assert all(0 <= fragment.start < fragment.end <= len(text) for fragment in observed.fragments)
