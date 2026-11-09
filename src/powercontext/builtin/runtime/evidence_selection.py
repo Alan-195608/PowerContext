@@ -209,10 +209,12 @@ _COMPOUND_ALIAS_SHARE = 0.2
 
 
 def select_evidence(request, groups):  # noqa: C901 - bounded literal selection and packing
-    query = Counter(_tokens(request.query))
+    query = {term: float(count) for term, count in Counter(_tokens(request.query)).items()}
     identifiers = re.findall(r"\b(?:[A-Z]{2,}[0-9]*|[a-zA-Z]+[0-9]+[a-zA-Z0-9]*)\b", request.query)
     for term in _tokens(" ".join(identifiers)):
-        query[term] = max(query[term], 3)
+        # An identifier can be shared by articles about entirely different
+        # outcomes. Keep its boost modest so the outcome can decide the match.
+        query[term] = max(query.get(term, 0.0), 1.5)
     for term in _compound_aliases(request.query):
         if term in query:
             query[term] *= _COMPOUND_ALIAS_SHARE
@@ -241,12 +243,17 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
                         Counter(_tokens(fragment.text)),
                         hit.text,
                     ))
-    frequency = Counter(token for _, tokens, _ in candidates for token in tokens)
 
     def identity(fragment):
         return (fragment.address.memory.model_dump_json(), fragment.address.entry_id, fragment.address.entry_version_id)
 
     document_frequency = Counter(t for tokens in document_tokens.values() for t in tokens)
+    # Count independent entries instead of sentences. A concept repeated
+    # throughout one entry can still distinguish it from the other entries.
+    weights = {
+        term: weight * (0.5 + math.log((len(document_tokens) + 1) / (document_frequency[term] + 1)))
+        for term, weight in query.items()
+    }
     average_length = sum(sum(tokens.values()) for tokens in document_tokens.values()) / max(1, len(document_tokens))
     document_scores = {
         address: sum(
@@ -268,7 +275,7 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
     scores = []
     for fragment, tokens, original in candidates:
         matches = set(query) & tokens.keys()
-        score = sum(math.log(1 + len(candidates) / (1 + frequency[t])) * query[t] for t in matches)
+        score = sum(weight for term, weight in weights.items() if term in matches)
         score *= 1 + len(matches) / max(1, len(query))
         score *= (document_scores[identity(fragment)] / maximum) ** 1.0
         # Length is accounted for once, when the contiguous windows are ranked
@@ -289,6 +296,7 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
     # Evaluate contiguous windows: one citation can then pay for several useful
     # sentences, including connecting evidence with few literal query words.
     windows = []
+    envelope_bytes = len(_render([]).encode())
     for left, (first, _, original) in enumerate(candidates):
         total = 0.0
         for right in range(left, len(candidates)):
@@ -301,7 +309,9 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
             if size > request.max_bytes:
                 break
             if total:
-                windows.append((total / max(1, len(fragment.text)) ** 0.35, left, fragment))
+                # Rank by serialized item cost, including the citation and
+                # escaping. Short windows still pay for a complete citation.
+                windows.append((total / (size - envelope_bytes) ** 0.25, left, fragment))
     windows.sort(key=lambda value: (-value[0], value[1]))
     selected = []
     for _, _, fragment in windows:

@@ -172,3 +172,26 @@ async def test_equal_coverage_prefers_later_finding_over_the_opening_restatement
         )
         assert result.context.content is not None
         assert result.context.content_bytes == len(result.context.content.encode()) <= 1000
+
+
+@pytest.mark.asyncio
+async def test_shared_identifier_does_not_displace_the_relevant_outcome():
+    fixture = json.loads((Path(__file__).parent / "fixtures/scifact_shared_identifier.json").read_text())
+    documents = {document["id"]: document["text"] for document in fixture["documents"]}
+    supporting = documents[fixture["supporting_document_id"]]
+    start, end = fixture["supporting_range"]
+    async with open_builtin_runtime(BuiltinConfig()) as runtime:
+        assert runtime.scopes is not None
+        scope = await runtime.scopes.create(
+            ScopeDraft(title="Shared identifier", summary="Distinguish outcomes", idempotency_key="shared-identifier")
+        )
+        for budget in (1400, 1800):
+            result, originals = await _select(runtime, scope.scope_id, documents.values(), fixture["query"], budget)
+            assert result.context.content is not None
+            assert result.context.content_bytes == len(result.context.content.encode()) <= budget
+            assert any(
+                originals[fragment.address.entry_id] == supporting
+                and fragment.start <= start
+                and fragment.end >= (end if budget == 1800 else start + 1)
+                for fragment in result.fragments
+            )
