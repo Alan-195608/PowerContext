@@ -258,3 +258,39 @@ def test_repeated_hit_does_not_restart_offsets_inside_a_window():
     assert observed.fragments == expected.fragments
     assert observed.fragments
     assert all(0 <= fragment.start < fragment.end <= len(text) for fragment in observed.fragments)
+
+
+@pytest.mark.parametrize("budget", [512, 700, 999, 1000, 1200, 1400, 1800, 2400])
+def test_merged_windows_preserve_scope_identity_and_exact_wire_budget(budget):
+    text = 'Cobalt sensor measured pressure. 海洋观测 "station"\nResults showed 37 units. ' * 3
+    ref = ArtifactRef(family="memory", artifact_id="shared-memory", revision=2)
+    hit = MemoryHit(memory_ref=ref, entry_id="entry", entry_version_id="version", text=text, score=1, matched_by=())
+    groups = tuple(PreparedMemoryCandidates(scope_id=scope, memory_ref=ref, hits=(hit,)) for scope in ("a", "b"))
+    result = PreparedContextBuilder().build_scopes_result(
+        request=PrepareContextRequest(
+            query="cobalt sensor pressure station", evidence_selection=True, max_bytes=budget
+        ),
+        current_scope_id="a",
+        memory_candidates=groups,
+    )
+    content = result.context.content or ""
+    assert result.context.content_bytes == len(content.encode("utf-8")) <= budget
+    assert result.origins == tuple(f.address for f in result.fragments)
+    if not content:
+        assert not result.fragments
+        return
+    payload = json.loads(content.splitlines()[-2])
+    assert payload["trust"] == "untrusted_history"
+    assert len(payload["items"]) == len(result.fragments)
+    for item, fragment in zip(payload["items"], result.fragments, strict=True):
+        assert type(fragment.start) is int and type(fragment.end) is int
+        assert 0 <= fragment.start < fragment.end <= len(text)
+        assert fragment.text == text[fragment.start : fragment.end] == item["content"]
+        assert item["citation"]["scope_id"] == fragment.address.memory.scope_id
+        assert item["citation"]["memory_ref"] == ref.model_dump(mode="json")
+        assert item["citation"]["entry_id"] == "entry"
+        assert item["citation"]["entry_version_id"] == "version"
+        assert (item["start"], item["end"]) == (fragment.start, fragment.end)
+    for left, right in zip(result.fragments, result.fragments[1:], strict=False):
+        if left.address == right.address:
+            assert left.end < right.start

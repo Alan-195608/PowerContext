@@ -324,10 +324,19 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
     windows.sort(key=lambda value: (-value[0], value[1]))
     selected = []
     for _, _, fragment in windows:
-        if any(f.address == fragment.address and f.start < fragment.end and fragment.start < f.end for f in selected):
-            continue
-        if len(_render([*selected, fragment]).encode()) <= request.max_bytes:
-            selected.append(fragment)
+        overlapping = [
+            f for f in selected if f.address == fragment.address and f.start <= fragment.end and fragment.start <= f.end
+        ]
+        if overlapping:
+            start = min(fragment.start, *(f.start for f in overlapping))
+            end = max(fragment.end, *(f.end for f in overlapping))
+            original = next(text for item, _, text in candidates if item.address == fragment.address)
+            combined = replace(fragment, start=start, end=end, text=original[start:end])
+            trial = [f for f in selected if f not in overlapping] + [combined]
+        else:
+            trial = [*selected, fragment]
+        if len(_render(trial).encode()) <= request.max_bytes:
+            selected = trial
     # Spend the remaining bytes on adjacent literal context rather than leaving
     # room stranded below the cost of another citation.
     originals = {identity(fragment): original for fragment, _, original in candidates}
