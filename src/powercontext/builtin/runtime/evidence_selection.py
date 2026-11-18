@@ -15,6 +15,7 @@ from powercontext.builtin.runtime.models import PreparedContext
 from powercontext.builtin.runtime.prepared_context import (
     MemoryEntryAddress,
     PreparedContextBuild,
+    PreparedContextInvariantError,
     PreparedEvidenceFragment,
 )
 from powercontext.builtin.runtime.prepared_envelope import encode_envelope
@@ -213,7 +214,7 @@ def _compound_aliases(text):
 _COMPOUND_ALIAS_SHARE = 0.2
 
 
-def select_evidence(request, groups):  # noqa: C901 - bounded literal selection and packing
+def select_evidence(request, groups, *, current_scope_id=None):  # noqa: C901 - bounded literal selection and packing
     query = {term: float(count) for term, count in Counter(_tokens(request.query)).items()}
     identifiers = re.findall(r"\b(?:[A-Z]{2,}[0-9]*|[a-zA-Z]+[0-9]+[a-zA-Z0-9]*)\b", request.query)
     for term in _tokens(" ".join(identifiers)):
@@ -227,8 +228,14 @@ def select_evidence(request, groups):  # noqa: C901 - bounded literal selection 
     document_tokens = {}
     for group in groups:
         for hit in group.hits:
+            if hit.memory_ref != group.memory_ref:
+                raise PreparedContextInvariantError("memory-ref-mismatch")
+            if not hit.entry_id.strip() or not hit.entry_version_id.strip() or not hit.text.strip():
+                continue
             address = MemoryEntryAddress(
-                ArtifactAddress(scope_id=group.scope_id, artifact=hit.memory_ref), hit.entry_id, hit.entry_version_id
+                ArtifactAddress(scope_id=group.scope_id or current_scope_id or "", artifact=hit.memory_ref),
+                hit.entry_id,
+                hit.entry_version_id,
             )
             key = (address.memory.model_dump_json(), address.entry_id, address.entry_version_id)
             # Windows assume a single forward pass over the offsets of each

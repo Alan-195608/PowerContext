@@ -294,3 +294,34 @@ def test_merged_windows_preserve_scope_identity_and_exact_wire_budget(budget):
     for left, right in zip(result.fragments, result.fragments[1:], strict=False):
         if left.address == right.address:
             assert left.end < right.start
+
+
+@pytest.mark.parametrize("mismatched", [False, True])
+def test_evidence_scope_fallback_and_revision_validation(mismatched):
+    from powercontext.builtin.runtime.prepared_context import PreparedContextInvariantError
+
+    ref = ArtifactRef(family="memory", artifact_id="memory", revision=1)
+    hit_ref = ArtifactRef(family="memory", artifact_id="memory", revision=2) if mismatched else ref
+    hit = MemoryHit(
+        memory_ref=hit_ref,
+        entry_id="entry",
+        entry_version_id="version",
+        text="Cobalt sensor measured pressure.",
+        score=1,
+        matched_by=(),
+    )
+
+    def build():
+        return PreparedContextBuilder().build_scopes_result(
+            request=PrepareContextRequest(query="cobalt pressure", evidence_selection=True, max_bytes=1400),
+            current_scope_id="active-scope",
+            memory_candidates=(PreparedMemoryCandidates(scope_id=None, memory_ref=ref, hits=(hit,)),),
+        )
+
+    if mismatched:
+        with pytest.raises(PreparedContextInvariantError, match="memory-ref-mismatch"):
+            build()
+    else:
+        result = build()
+        assert result.fragments
+        assert all(fragment.address.memory.scope_id == "active-scope" for fragment in result.fragments)

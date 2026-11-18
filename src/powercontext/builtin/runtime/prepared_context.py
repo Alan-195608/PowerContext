@@ -224,7 +224,7 @@ class PreparedContextBuilder:
         if request.evidence_selection:
             from powercontext.builtin.runtime.evidence_selection import select_evidence
 
-            return select_evidence(request, memory_candidates)
+            return select_evidence(request, memory_candidates, current_scope_id=current_scope_id)
         if request.include_code:
 
             def historical(history_request: PrepareContextRequest, entries: int) -> PreparedContextBuild:
