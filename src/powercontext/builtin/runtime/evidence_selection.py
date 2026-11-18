@@ -1,412 +1,295 @@
-"""Query-driven literal sentence selection measured against full wire overhead."""
+# Copyright (c) 2026 OceanBase.
+# SPDX-License-Identifier: Apache-2.0
+"""Select literal sentence spans within the complete context byte budget."""
 
 from __future__ import annotations
 
-import math
 import re
-import sqlite3
-from bisect import bisect_left, bisect_right
-from collections import Counter
-from contextlib import closing
-from dataclasses import replace
+from collections.abc import Sequence
+from dataclasses import dataclass, replace
 
 from powercontext.artifacts import ArtifactAddress
-from powercontext.builtin.runtime.models import PreparedContext
+from powercontext.builtin.runtime.models import PrepareContextRequest, PreparedContext
 from powercontext.builtin.runtime.prepared_context import (
     MemoryEntryAddress,
     PreparedContextBuild,
     PreparedContextInvariantError,
-    PreparedEvidenceFragment,
+    PreparedContextOmissions,
+    PreparedContextOrigin,
+    PreparedMemoryCandidates,
 )
+from powercontext.builtin.runtime.prepared_context import PreparedEvidenceFragment as PreparedContextFragment
 from powercontext.builtin.runtime.prepared_envelope import encode_envelope
 from powercontext.builtin.runtime.prepared_text import TRUST_POLICY
 
-_STOP = frozenset([
-    "we",
-    "our",
-    "their",
-    "has",
-    "have",
-    "had",
-    "can",
-    "could",
-    "may",
-    "might",
-    "also",
-    "than",
-    "which",
-    "but",
-    "does",
-    "did",
-    "do",
-    "a",
-    "an",
-    "the",
-    "and",
-    "or",
-    "of",
-    "to",
-    "in",
-    "on",
-    "at",
-    "by",
-    "from",
-    "with",
-    "as",
-    "is",
-    "are",
-    "was",
-    "were",
-    "be",
-    "been",
-    "that",
-    "this",
-    "these",
-    "those",
-    "it",
-    "its",
-    "for",
-])
-_HAN = r"\u3400-\u4dbf\u4e00-\u9fff\U00020000-\U000323af"
-_WORD = re.compile(rf"[{_HAN}]|(?:(?![{_HAN}])\w)+")
-_SENTENCE = re.compile(
-    r"""\S[^\r\n]*?(?:[.!?]["'\u2019\u201d)]*(?=\s|$)|[。\uff01\uff1f]["'\u2019\u201d\uff09]*|(?=[\r\n]|$))"""
-)
+_BEGIN_MARKER = "BEGIN_POWERCONTEXT_PREPARED_CONTEXT_V1"
+_END_MARKER = "END_POWERCONTEXT_PREPARED_CONTEXT_V1"
 
 
-def _tokens(text):
-    folded = text.casefold().translate(
-        str.maketrans({
-            "α": "alpha",  # noqa: RUF001 - scientific Greek letter normalization
-            "β": "beta",
-            "γ": "gamma",  # noqa: RUF001 - scientific Greek letter normalization
-            "δ": "delta",
-            "κ": "kappa",
-            "μ": "mu",
-        })
+def _pack_sentences(  # noqa: C901 - reference sentence packing with exact byte checks
+    request: PrepareContextRequest,
+    *,
+    current_scope_id: str | None,
+    memory_candidates: Sequence[PreparedMemoryCandidates],
+) -> tuple[
+    str | None, tuple[PreparedContextOrigin, ...], PreparedContextOmissions, tuple[PreparedContextFragment, ...]
+]:
+    """Select literal query-relevant spans from Memory candidates within one byte budget."""
+
+    query_terms = _query_terms(request.query)
+    units: list[_SentenceCandidate] = []
+    texts: dict[tuple[int, int], str] = {}
+    for group_index, candidates in enumerate(memory_candidates):
+        scope_id = candidates.scope_id or current_scope_id or ""
+        seen: set[tuple[str, str]] = set()
+        for entry_index, hit in enumerate(candidates.hits):
+            if hit.memory_ref != candidates.memory_ref:
+                raise PreparedContextInvariantError("memory-ref-mismatch")
+            identity = (hit.entry_id, hit.entry_version_id)
+            if identity in seen:
+                continue
+            seen.add(identity)
+            if not hit.entry_id.strip() or not hit.entry_version_id.strip() or not hit.text.strip():
+                continue
+            key = (group_index, entry_index)
+            texts[key] = hit.text
+            address = MemoryEntryAddress(
+                memory=ArtifactAddress(scope_id=scope_id, artifact=hit.memory_ref),
+                entry_id=hit.entry_id,
+                entry_version_id=hit.entry_version_id,
+            )
+            for unit_index, (start, end) in enumerate(_sentence_spans(hit.text)):
+                units.append(
+                    _SentenceCandidate(
+                        group=group_index,
+                        entry_index=entry_index,
+                        unit_index=unit_index,
+                        address=address,
+                        start=start,
+                        end=end,
+                        matched=len(query_terms.intersection(_query_terms(hit.text[start:end]))),
+                    )
+                )
+    if not units:
+        return None, (), PreparedContextOmissions(), ()
+
+    ordered = sorted(
+        units,
+        key=lambda unit: (-unit.matched, unit.end - unit.start, unit.group, unit.entry_index, unit.unit_index),
     )
-    compounds = re.findall(r"\b[a-z0-9]+(?:[-‐‑–][a-z0-9]+)+\b", folded)  # noqa: RUF001 - normalize hyphens
-    compounds += re.findall(r"\b[a-z]{1,8}\s+[0-9]+[a-z]*\b", folded)
-    extra = [re.sub(r"[^a-z0-9]", "", value) for value in compounds]
-    words = [word for word in [*_WORD.findall(folded), *extra] if word not in _STOP]
-    if not words:
-        return []
-    with closing(sqlite3.connect(":memory:")) as database:
-        database.execute("CREATE VIRTUAL TABLE words USING fts5(text, tokenize='porter unicode61')")
-        database.execute("CREATE VIRTUAL TABLE vocabulary USING fts5vocab(words, instance)")
-        database.execute("INSERT INTO words VALUES (?)", (" ".join(words),))
-        return [row[0] for row in database.execute("SELECT term FROM vocabulary ORDER BY offset")]
+    ranks = {(unit.group, unit.entry_index, unit.unit_index): rank for rank, unit in enumerate(ordered)}
+    by_index = {(unit.group, unit.entry_index, unit.unit_index): unit for unit in units}
+    selected: list[_SentenceCandidate] = []
+    dropped = 0
+    for unit in ordered:
+        if not unit.matched:
+            break
+        if _evidence_fits((*selected, unit), texts, ranks, request.max_bytes):
+            selected.append(unit)
+            continue
+        trimmed = _trim_evidence(unit, texts, selected, ranks, request.max_bytes)
+        if trimmed is None:
+            dropped += 1
+        else:
+            selected.append(trimmed)
+    if selected:
+        adjacent: list[_SentenceCandidate] = []
+        for unit in selected:
+            for offset in (-1, 1):
+                neighbour = by_index.get((unit.group, unit.entry_index, unit.unit_index + offset))
+                if neighbour is not None and neighbour not in selected and neighbour not in adjacent:
+                    adjacent.append(neighbour)
+        for unit in adjacent:
+            if _evidence_fits((*selected, unit), texts, ranks, request.max_bytes):
+                selected.append(unit)
+            else:
+                dropped += 1
+    if not selected and units:
+        fallback = min(units, key=lambda unit: (unit.group, unit.entry_index, unit.unit_index))
+        selected = [trimmed] if (trimmed := _trim_evidence(fallback, texts, (), ranks, request.max_bytes)) else []
+    if not selected:
+        return None, (), PreparedContextOmissions(dropped_items=dropped), ()
+
+    fragments = _evidence_fragments(selected, texts, ranks)
+    content = _render_evidence(fragments)
+    if len(content.encode("utf-8")) > request.max_bytes:
+        raise PreparedContextInvariantError("output-budget")
+    return (
+        content,
+        tuple(fragment.address for fragment in fragments),
+        PreparedContextOmissions(dropped_items=dropped),
+        fragments,
+    )
 
 
-def _render(fragments):
+@dataclass(frozen=True)
+class _SentenceCandidate:
+    """One literal sentence-level span of one Memory entry."""
+
+    group: int
+    entry_index: int
+    unit_index: int
+    address: MemoryEntryAddress
+    start: int
+    end: int
+    matched: int
+
+
+_TERM_PATTERN = re.compile(r"[^\W_]+")
+_MIN_EVIDENCE_CHARS = 24
+_MAX_EVIDENCE_SENTENCE_CHARS = 800
+
+
+def _query_terms(text: str) -> set[str]:
+    return {match.group().casefold() for match in _TERM_PATTERN.finditer(text)}
+
+
+def _trim_span(text: str, start: int, end: int) -> tuple[int, int] | None:
+    while start < end and text[start].isspace():
+        start += 1
+    while end > start and text[end - 1].isspace():
+        end -= 1
+    return (start, end) if start < end else None
+
+
+def _split_span(text: str, start: int, end: int) -> list[tuple[int, int]]:
+    if end - start <= _MAX_EVIDENCE_SENTENCE_CHARS:
+        return [(start, end)]
+    spans: list[tuple[int, int]] = []
+    cursor = start
+    while end - cursor > _MAX_EVIDENCE_SENTENCE_CHARS:
+        limit = cursor + _MAX_EVIDENCE_SENTENCE_CHARS
+        split = limit
+        while split > cursor and not text[split - 1].isspace():
+            split -= 1
+        if split <= cursor:
+            split = limit
+        spans.append((cursor, split))
+        cursor = split
+        while cursor < end and text[cursor].isspace():
+            cursor += 1
+    if cursor < end:
+        spans.append((cursor, end))
+    return spans
+
+
+def _sentence_spans(text: str) -> tuple[tuple[int, int], ...]:
+    """Split literal text into sentence spans that keep their original character offsets."""
+
+    spans: list[tuple[int, int]] = []
+    length = len(text)
+    start = 0
+    index = 0
+    while index < length:
+        if text[index] in ".!?\n":
+            end = index + 1
+            while end < length and text[end] in "\"'”’)]}":  # noqa: RUF001 - literal punctuation
+                end += 1
+            if end < length and not text[end].isspace():
+                index += 1
+                continue
+            span = _trim_span(text, start, end)
+            if span is not None:
+                spans.extend(_split_span(text, *span))
+            while end < length and text[end].isspace():
+                end += 1
+            start = index = end
+            continue
+        index += 1
+    span = _trim_span(text, start, length)
+    if span is not None:
+        spans.extend(_split_span(text, *span))
+    return tuple(spans)
+
+
+def _evidence_fragments(
+    units: Sequence[_SentenceCandidate],
+    texts: dict[tuple[int, int], str],
+    ranks: dict[tuple[int, int, int], int],
+) -> tuple[PreparedContextFragment, ...]:
+    grouped: dict[tuple[int, int], list[_SentenceCandidate]] = {}
+    for unit in units:
+        grouped.setdefault((unit.group, unit.entry_index), []).append(unit)
+    ranked: list[tuple[int, PreparedContextFragment]] = []
+    for key, group_units in grouped.items():
+        merged: list[tuple[int, int, int, _SentenceCandidate]] = []
+        for unit in sorted(group_units, key=lambda unit: unit.start):
+            rank = ranks[(unit.group, unit.entry_index, unit.unit_index)]
+            if merged and unit.start <= merged[-1][1]:
+                begin, finish, best_rank, first = merged[-1]
+                merged[-1] = (begin, max(finish, unit.end), min(best_rank, rank), first)
+            else:
+                merged.append((unit.start, unit.end, rank, unit))
+        for begin, finish, rank, unit in merged:
+            ranked.append((
+                rank,
+                PreparedContextFragment(address=unit.address, start=begin, end=finish, text=texts[key][begin:finish]),
+            ))
+    ranked.sort(key=lambda pair: pair[0])
+    return tuple(fragment for _, fragment in ranked)
+
+
+def _render_evidence(fragments: Sequence[PreparedContextFragment]) -> str:
     items = [
         {
             "citation": {
-                "scope_id": item.address.memory.scope_id,
-                "memory_ref": item.address.memory.artifact.model_dump(mode="json"),
-                "entry_id": item.address.entry_id,
-                "entry_version_id": item.address.entry_version_id,
+                "scope_id": fragment.address.memory.scope_id,
+                "memory_ref": fragment.address.memory.artifact.model_dump(mode="json"),
+                "entry_id": fragment.address.entry_id,
+                "entry_version_id": fragment.address.entry_version_id,
             },
-            "content": item.text,
-            "start": item.start,
-            "end": item.end,
+            "content": fragment.text,
+            "start": fragment.start,
+            "end": fragment.end,
         }
-        for item in fragments
+        for fragment in fragments
     ]
-    return (
-        TRUST_POLICY
-        + "\nBEGIN_POWERCONTEXT_PREPARED_CONTEXT_V1\n"
-        + encode_envelope({"trust": "untrusted_history", "items": items})
-        + "\nEND_POWERCONTEXT_PREPARED_CONTEXT_V1"
-    )
+    envelope = {"trust": "untrusted_history", "items": items}
+    encoded = encode_envelope(envelope)
+    return "\n\n".join((TRUST_POLICY, f"{_BEGIN_MARKER}\n{encoded}\n{_END_MARKER}"))
 
 
-def _fit_query_fragment(fragment, original, query, budget):  # noqa: C901 - two monotone byte fits and literal scoring
-    """Fit an oversized sentence around matching concepts, not its first matching word."""
-    if len(_render([fragment]).encode()) <= budget:
-        return fragment
-    words = list(_WORD.finditer(fragment.text))
-    analyzed = {}
-    occurrences = []
-    frequencies = Counter()
-    for word in words:
-        value = word.group().casefold()
-        if value not in analyzed:
-            analyzed[value] = set(_tokens(value)) & query.keys()
-        matches = analyzed[value]
-        if matches:
-            occurrences.append((fragment.start + word.start(), fragment.start + word.end(), matches))
-            frequencies.update(matches)
-    if not occurrences:
-        return None
-    weights = {term: query[term] * math.log1p(len(words) / count) for term, count in frequencies.items()}
-    # Rare matching concepts seed the bounded search before repeated generic words.
-    anchors = sorted(occurrences, key=lambda item: -sum(weights[t] for t in item[2]))[:128]
-    starts = [fragment.start + word.start() for word in words]
-    ends = [fragment.start + word.end() for word in words]
-    attempts = set()
-    fitting = []
-    for left, right, _ in anchors:
-        desired = max(fragment.start, left - 120)
-        start = starts[bisect_left(starts, desired)]
-        end = min(fragment.end, right + 120)
-        for forward in (True, False):
-            fixed = start if forward else end
-            key = (forward, fixed)
-            if key in attempts:
-                continue
-            attempts.add(key)
-            low, high = (start + 1, fragment.end) if forward else (fragment.start, end - 1)
-            best = None
-            while low <= high:
-                middle = (low + high) // 2
-                a, b = (start, middle) if forward else (middle, end)
-                candidate = replace(fragment, start=a, end=b, text=original[a:b])
-                if len(_render([candidate]).encode()) <= budget:
-                    best = candidate
-                    if forward:
-                        low = middle + 1
-                    else:
-                        high = middle - 1
-                elif forward:
-                    high = middle - 1
-                else:
-                    low = middle + 1
-            if best is None:
-                continue
-            start_index = bisect_left(starts, best.start)
-            if start_index == len(starts):
-                continue
-            a = starts[start_index]
-            boundary = bisect_right(ends, best.end) - 1
-            if boundary < 0 or a >= ends[boundary]:
-                continue
-            b = ends[boundary]
-            candidate = replace(fragment, start=a, end=b, text=original[a:b])
-            matched = set().union(*(terms for x, y, terms in occurrences if a <= x and y <= b))
-            utility = sum(weights[t] for t in matched)
-            # Equal concept coverage should keep the focused window: padding a
-            # long sentence with boilerplate must not dilute its ranking later.
-            fitting.append((utility, len(matched), a - b, -a, candidate))
-    return max(fitting, key=lambda value: value[:4])[-1] if fitting else None
+def _evidence_fits(
+    units: Sequence[_SentenceCandidate],
+    texts: dict[tuple[int, int], str],
+    ranks: dict[tuple[int, int, int], int],
+    max_bytes: int,
+) -> bool:
+    return len(_render_evidence(_evidence_fragments(units, texts, ranks)).encode("utf-8")) <= max_bytes
 
 
-def _compound_aliases(text):
-    """The synthetic alias term of every hyphenated compound in ``text``.
+def _trim_evidence(
+    unit: _SentenceCandidate,
+    texts: dict[tuple[int, int], str],
+    selected: Sequence[_SentenceCandidate],
+    ranks: dict[tuple[int, int, int], int],
+    max_bytes: int,
+) -> _SentenceCandidate | None:
+    """Shorten one span to the longest literal prefix that still fits the byte budget."""
 
-    ``_tokens`` adds one alias per hyphenated compound, so "AMP-activated"
-    yields the words ``amp`` and ``activ`` *and* the alias ``ampactivated``.
-    The alias is a real matchable term - a document that spells the compound
-    the same way produces it too - but it repeats what the compound's own
-    words already say, so an undiscounted alias counts the compound twice.
-    """
-    folded = text.casefold()
-    aliases = set()
-    for compound in re.findall(r"\b[a-z0-9]+(?:[-‐‑–][a-z0-9]+)+\b", folded):  # noqa: RUF001 - normalize hyphens
-        aliases.update(_tokens(re.sub(r"[^a-z0-9]", "", compound)))
-    return aliases
-
-
-# A hyphenated compound's alias term repeats the compound's own words, so the
-# compound would otherwise carry twice the weight of a single word. The alias
-# keeps a reduced share of the weight: it still matches the documents that
-# spell the compound, but it no longer outweighs the outcome a claim is about.
-_COMPOUND_ALIAS_SHARE = 0.2
-
-
-def select_evidence(request, groups, *, current_scope_id=None):  # noqa: C901 - bounded literal selection and packing
-    query = {term: float(count) for term, count in Counter(_tokens(request.query)).items()}
-    identifiers = re.findall(r"\b(?:[A-Z]{2,}[0-9]*|[a-zA-Z]+[0-9]+[a-zA-Z0-9]*)\b", request.query)
-    for term in _tokens(" ".join(identifiers)):
-        # An identifier can be shared by articles about entirely different
-        # outcomes. Keep its boost modest so the outcome can decide the match.
-        query[term] = max(query.get(term, 0.0), 1.5)
-    for term in _compound_aliases(request.query):
-        if term in query:
-            query[term] *= _COMPOUND_ALIAS_SHARE
-    candidates = []
-    document_tokens = {}
-    for group in groups:
-        for hit in group.hits:
-            if hit.memory_ref != group.memory_ref:
-                raise PreparedContextInvariantError("memory-ref-mismatch")
-            if not hit.entry_id.strip() or not hit.entry_version_id.strip() or not hit.text.strip():
-                continue
-            address = MemoryEntryAddress(
-                ArtifactAddress(scope_id=group.scope_id or current_scope_id or "", artifact=hit.memory_ref),
-                hit.entry_id,
-                hit.entry_version_id,
-            )
-            key = (address.memory.model_dump_json(), address.entry_id, address.entry_version_id)
-            # Windows assume a single forward pass over the offsets of each
-            # entry. A repeated hit would restart those offsets mid-window.
-            if key in document_tokens:
-                continue
-            document_tokens[key] = Counter(_tokens(hit.text))
-            for match in _SENTENCE.finditer(hit.text):
-                start, end = match.span()
-                if start < end:
-                    fragment = _fit_query_fragment(
-                        PreparedEvidenceFragment(address, start, end, hit.text[start:end]),
-                        hit.text,
-                        query,
-                        request.max_bytes,
-                    )
-                    if fragment is None:
-                        continue
-                    candidates.append((
-                        fragment,
-                        Counter(_tokens(fragment.text)),
-                        hit.text,
-                    ))
-
-    def identity(fragment):
-        return (fragment.address.memory.model_dump_json(), fragment.address.entry_id, fragment.address.entry_version_id)
-
-    document_frequency = Counter(t for tokens in document_tokens.values() for t in tokens)
-    # Count independent entries instead of sentences. A concept repeated
-    # throughout one entry can still distinguish it from the other entries.
-    weights = {
-        term: weight * (0.5 + math.log((len(document_tokens) + 1) / (document_frequency[term] + 1)))
-        for term, weight in query.items()
-    }
-    average_length = sum(sum(tokens.values()) for tokens in document_tokens.values()) / max(1, len(document_tokens))
-    document_scores = {
-        address: sum(
-            math.log(1 + (len(document_tokens) - document_frequency[t] + 0.5) / (document_frequency[t] + 0.5))
-            * tokens[t]
-            * query[t]
-            * 2.2
-            / (tokens[t] + 1.2 * (0.25 + 0.75 * sum(tokens.values()) / average_length))
-            for t in query
-            if tokens[t]
-        )
-        for address, tokens in document_tokens.items()
-    }
-    for fragment, _, original in candidates:
-        if fragment.start == 0:
-            title = set(_tokens(original[:200]))
-            document_scores[identity(fragment)] *= 1 + 4 * len(title & query.keys()) / max(1, len(query))
-    maximum = max(document_scores.values(), default=1) or 1
-    scores = []
-    for fragment, tokens, original in candidates:
-        matches = set(query) & tokens.keys()
-        score = sum(weight for term, weight in weights.items() if term in matches)
-        score *= 1 + len(matches) / max(1, len(query))
-        score *= (document_scores[identity(fragment)] / maximum) ** 1.0
-        # Length is accounted for once, when the contiguous windows are ranked
-        # below. Dividing the sentence score as well would charge a long
-        # sentence twice and let a short title match that repeats two query
-        # words outrank the complete evidence sentence later in the document.
-        lower = fragment.text.lower()
-        if re.search(r"\b(results?|conclusions?|found|showed|demonstrat|indicat|suggest)", lower):
-            score *= 1.5
-        # Depth inside the entry is part of the same judgement: an opening
-        # restates the topic the query already contains, while the findings that
-        # answer the query arrive later, so among ranges with equal concept
-        # coverage the later one is the evidence.
-        score *= 0.5 + fragment.end / max(1, len(original))
-        if fragment.start == 0:
-            score *= 0.3
-        scores.append(score)
-    # Evaluate contiguous windows: one citation can then pay for several useful
-    # sentences, including connecting evidence with few literal query words.
-    windows = []
-    envelope_bytes = len(_render([]).encode())
-    for left, (first, _, original) in enumerate(candidates):
-        total = 0.0
-        for right in range(left, len(candidates)):
-            last = candidates[right][0]
-            if last.address != first.address:
-                break
-            total += scores[right]
-            fragment = replace(first, end=last.end, text=original[first.start : last.end])
-            size = len(_render([fragment]).encode())
-            if size > request.max_bytes:
-                break
-            if total:
-                # Rank by serialized item cost, including the citation and
-                # escaping. Short windows still pay for a complete citation.
-                windows.append((total / (size - envelope_bytes) ** 0.25, left, fragment))
-    windows.sort(key=lambda value: (-value[0], value[1]))
-    selected = []
-    for _, _, fragment in windows:
-        overlapping = [
-            f for f in selected if f.address == fragment.address and f.start <= fragment.end and fragment.start <= f.end
-        ]
-        if overlapping:
-            start = min(fragment.start, *(f.start for f in overlapping))
-            end = max(fragment.end, *(f.end for f in overlapping))
-            original = next(text for item, _, text in candidates if item.address == fragment.address)
-            combined = replace(fragment, start=start, end=end, text=original[start:end])
-            trial = [f for f in selected if f not in overlapping] + [combined]
+    low = min(unit.end, unit.start + _MIN_EVIDENCE_CHARS)
+    high = unit.end - 1
+    best: _SentenceCandidate | None = None
+    while low <= high:
+        middle = (low + high) // 2
+        candidate = replace(unit, end=middle)
+        if _evidence_fits((*selected, candidate), texts, ranks, max_bytes):
+            best = candidate
+            low = middle + 1
         else:
-            trial = [*selected, fragment]
-        if len(_render(trial).encode()) <= request.max_bytes:
-            selected = trial
-    # Spend the remaining bytes on adjacent literal context rather than leaving
-    # room stranded below the cost of another citation.
-    originals = {identity(fragment): original for fragment, _, original in candidates}
-    for index, fragment in enumerate(selected):
-        original = originals[identity(fragment)]
-        neighbors = [
-            other
-            for other, _, _ in candidates
-            if other.address == fragment.address and (other.start >= fragment.end or other.end <= fragment.start)
-        ]
-        neighbors.sort(
-            key=lambda other: (
-                min(abs(other.start - fragment.end), abs(fragment.start - other.end)),
-                other.start < fragment.start,
-            )
-        )
-        for other in neighbors:
-            start, end = min(fragment.start, other.start), max(fragment.end, other.end)
-            # Merging across a neighbour must not re-deliver bytes another
-            # selected fragment already covers: the overlap would be paid for
-            # twice while contributing no new evidence.
-            if any(
-                f.address == fragment.address and f.start < end and start < f.end
-                for position, f in enumerate(selected)
-                if position != index
-            ):
-                continue
-            trial = list(selected)
-            trial[index] = replace(fragment, start=start, end=end, text=original[start:end])
-            if len(_render(trial).encode()) <= request.max_bytes:
-                selected, fragment = trial, trial[index]
-            else:
-                low, high = 1, (fragment.start - start) + (end - fragment.end)
-                while low <= high:
-                    length = (low + high) // 2
-                    partial_start = fragment.start - length if start < fragment.start else fragment.start
-                    partial_end = fragment.end + length if end > fragment.end else fragment.end
-                    trial[index] = replace(
-                        fragment, start=partial_start, end=partial_end, text=original[partial_start:partial_end]
-                    )
-                    if len(_render(trial).encode()) <= request.max_bytes:
-                        selected, low = list(trial), length + 1
-                    else:
-                        high = length - 1
-                break
-    if not selected:
-        return PreparedContextBuild(PreparedContext(status="empty", content=None, content_bytes=0), ())
-    # Adjacent fragments of one entry can still touch or overlap after the
-    # expansion above. Deliver each covered range once so the budget is not
-    # spent on the same characters twice.
-    merged = []
-    for fragment in sorted(selected, key=lambda f: (identity(f), f.start)):
-        previous = merged[-1] if merged else None
-        if previous is not None and previous.address == fragment.address and fragment.start <= previous.end:
-            end = max(previous.end, fragment.end)
-            original = originals[identity(fragment)]
-            merged[-1] = replace(previous, end=end, text=original[previous.start : end])
-            continue
-        merged.append(fragment)
-    selected = merged
-    content = _render(selected)
+            high = middle - 1
+    return best
+
+
+def select_evidence(request, groups, *, current_scope_id=None):
+    content, origins, omissions, fragments = _pack_sentences(
+        request, current_scope_id=current_scope_id, memory_candidates=groups
+    )
     return PreparedContextBuild(
-        PreparedContext(status="ready", content=content, content_bytes=len(content.encode())),
-        tuple(fragment.address for fragment in selected),
-        fragments=tuple(selected),
+        PreparedContext(
+            status="ready" if content else "empty", content=content, content_bytes=len((content or "").encode())
+        ),
+        origins,
+        omissions,
+        fragments=fragments,
     )
